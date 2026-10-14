@@ -2,7 +2,6 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>教師間接服務項目及相關記錄系統</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -34,61 +33,39 @@
         .text-custom-all { color: #2c687a; }
         .border-custom-all { border-color: #a9d6e5; }
         .bg-custom-all-light { background-color: #f2f9fc; }
-
-        /* 手機響應式專用優化（僅影響 639px 以下螢幕，電腦版完全不受影響） */
-        @media (max-width: 639px) {
-            body {
-                padding-top: 1rem !important;
-                padding-bottom: 2rem !important;
-                padding-left: 0.75rem !important;
-                padding-right: 0.75rem !important;
-            }
-            #topHeaderBar {
-                flex-direction: column !important;
-                align-items: stretch !important;
-            }
-            #topHeaderBar > div:last-child {
-                width: 100% !important;
-                justify-content: space-between !important;
-            }
-            #topHeaderBar button {
-                flex: 1 !important;
-                justify-content: center !important;
-            }
-        }
     </style>
 </head>
-<body class="py-8 px-4 sm:px-8 text-slate-800">
+<body class="py-8 px-8 text-slate-800">
 
-    <div class="max-w-5xl w-full mx-auto space-y-6">
+    <div class="w-[1024px] mx-auto space-y-6">
 
         <!-- 0. 頂部身份切換與學期/教師管理列 -->
-        <div id="topHeaderBar" class="bg-[#0c4a6e] text-white rounded-2xl p-4 sm:p-5 shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-all duration-300">
-            <div class="flex items-center gap-3.5 flex-wrap w-full sm:w-auto">
+        <div id="topHeaderBar" class="bg-[#0c4a6e] text-white rounded-2xl p-5 shadow-md flex justify-between items-center gap-4 transition-all duration-300">
+            <div class="flex items-center gap-3.5">
                 <div id="headerIconBox" class="w-11 h-11 bg-white/10 rounded-xl flex items-center justify-center text-white border border-white/20 shrink-0">
                     <i class="fa-solid fa-user-tie text-xl"></i>
                 </div>
-                <div class="flex-1 min-w-0">
+                <div>
                     <div id="headerSubLabel" class="text-[11px] text-white/80 font-medium">當前切換 / 填寫環境</div>
-                    <div class="text-lg font-bold flex flex-wrap items-center gap-2 mt-0.5">
+                    <div class="text-lg font-bold flex items-center gap-2 mt-0.5">
                         <select id="activeSemesterSelect" onchange="switchSemester()" 
-                                class="bg-black/20 border border-white/30 text-white font-bold rounded-xl px-3 py-1.5 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer max-w-[130px] sm:max-w-none truncate">
+                                class="bg-black/20 border border-white/30 text-white font-bold rounded-xl px-3 py-1.5 text-base focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer">
                         </select>
                         <select id="activeTeacherSelect" onchange="switchTeacher()" 
-                                class="bg-black/20 border border-white/30 text-white font-bold rounded-xl px-3.5 py-1.5 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer max-w-[160px] sm:max-w-none truncate">
+                                class="bg-black/20 border border-white/30 text-white font-bold rounded-xl px-3.5 py-1.5 text-base focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer">
                         </select>
                     </div>
                 </div>
             </div>
 
-            <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+            <div class="flex items-center gap-2">
                 <button type="button" onclick="openSemesterManageModal()" 
-                        class="flex-1 sm:flex-none px-3 py-2 text-xs bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition duration-150 cursor-pointer border border-white/20 flex items-center justify-center gap-1.5 shadow-sm">
+                        class="px-3 py-2 text-xs bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition duration-150 cursor-pointer border border-white/20 flex items-center gap-1.5 shadow-sm">
                     <i class="fa-solid fa-calendar-plus"></i>
                     <span>學期管理</span>
                 </button>
                 <button type="button" id="manageTeacherBtn" onclick="openTeacherManageModal()" 
-                        class="flex-1 sm:flex-none px-3.5 py-2 text-xs bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition duration-150 cursor-pointer border border-white/20 flex items-center justify-center gap-2 shadow-sm">
+                        class="px-3.5 py-2 text-xs bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition duration-150 cursor-pointer border border-white/20 flex items-center gap-2 shadow-sm">
                     <i class="fa-solid fa-gear"></i>
                     <span>管理教師名單</span>
                 </button>
@@ -97,53 +74,53 @@
 
         <!-- 1. Header (網頁名稱與說明) -->
         <div class="border-b border-slate-200 pb-4">
-            <h1 class="text-xl sm:text-3xl font-bold text-slate-900 tracking-tight mb-2">
+            <h1 class="text-3xl font-bold text-slate-900 tracking-tight mb-2">
                 [<span id="headerSemesterTitle" class="text-cyan-700">114-1</span>] <span id="headerTeacherName">全校彙整</span> 間接服務紀錄表
             </h1>
-            <p class="text-slate-500 text-xs sm:text-sm">
+            <p class="text-slate-500 text-sm">
                 請填寫間接服務紀錄。系統支援跨學期切換、多位教師紀錄、全校總覽統計與匯出標準 Excel 報表。
             </p>
         </div>
 
         <!-- 2. 統計看板 -->
-        <div class="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-sm">
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 divide-y-0 sm:divide-x divide-slate-100">
-                <div class="flex items-center space-x-2.5 sm:space-x-3.5 sm:pr-2 pt-0">
-                    <div id="statCard1Icon" class="w-9 h-9 sm:w-11 sm:h-11 bg-cyan-50 text-cyan-600 rounded-2xl flex items-center justify-center shrink-0 text-base sm:text-lg transition-colors">
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm">
+            <div class="grid grid-cols-4 gap-4 divide-x divide-slate-100">
+                <div class="flex items-center space-x-3.5 pr-2 pt-0">
+                    <div id="statCard1Icon" class="w-11 h-11 bg-cyan-50 text-cyan-600 rounded-2xl flex items-center justify-center shrink-0 text-lg transition-colors">
                         <i class="fa-solid fa-clock"></i>
                     </div>
                     <div>
-                        <div class="text-[10px] sm:text-[11px] font-semibold text-slate-400">累計服務時數</div>
-                        <div class="text-base sm:text-lg font-extrabold text-slate-900 leading-tight">
+                        <div class="text-[11px] font-semibold text-slate-400">累計服務時數</div>
+                        <div class="text-lg font-extrabold text-slate-900 leading-tight">
                             <span id="totalHours">0</span>H <span id="totalMinsRem">0</span>m
                         </div>
-                        <div class="text-[10px] sm:text-[11px] text-slate-400 mt-0.5">共 <span id="totalMinutes">0</span> 分鐘</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">共 <span id="totalMinutes">0</span> 分鐘</div>
                     </div>
                 </div>
 
-                <div class="flex items-center space-x-2.5 sm:space-x-3.5 sm:pl-4 border-l border-slate-100 sm:border-l-0">
-                    <div class="w-9 h-9 sm:w-11 sm:h-11 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shrink-0 text-base sm:text-lg">
+                <div class="flex items-center space-x-3.5 pl-4">
+                    <div class="w-11 h-11 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shrink-0 text-lg">
                         <i class="fa-solid fa-graduation-cap"></i>
                     </div>
                     <div>
-                        <div class="text-[10px] sm:text-[11px] font-semibold text-slate-400">總服務節數</div>
-                        <div class="text-base sm:text-lg font-extrabold text-blue-600 leading-tight">
+                        <div class="text-[11px] font-semibold text-slate-400">總服務節數</div>
+                        <div class="text-lg font-extrabold text-blue-600 leading-tight">
                             <span id="totalSessions">0</span> 節
                         </div>
-                        <div class="text-[10px] sm:text-[11px] text-slate-400 mt-0.5">50分鐘/節</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">50分鐘/節</div>
                     </div>
                 </div>
 
-                <div class="flex items-center space-x-2.5 sm:space-x-3.5 pt-3 sm:pt-0 sm:pl-4 border-t border-slate-100 sm:border-t-0">
-                    <div class="w-9 h-9 sm:w-11 sm:h-11 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shrink-0 text-base sm:text-lg">
+                <div class="flex items-center space-x-3.5 pl-4">
+                    <div class="w-11 h-11 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shrink-0 text-lg">
                         <i class="fa-solid fa-chart-line"></i>
                     </div>
                     <div>
-                        <div class="text-[10px] sm:text-[11px] font-semibold text-slate-400">平均每週節數</div>
-                        <div class="text-base sm:text-lg font-extrabold text-emerald-600 leading-tight">
+                        <div class="text-[11px] font-semibold text-slate-400">平均每週節數</div>
+                        <div class="text-lg font-extrabold text-emerald-600 leading-tight">
                             <span id="weeklySessions">0</span> 節/週
                         </div>
-                        <div class="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
+                        <div class="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
                             <span>週數:</span>
                             <input type="number" id="semesterWeeks" value="20" min="1" max="50" onchange="render()" 
                                    class="w-10 px-1 py-0.5 text-center text-xs font-bold border border-emerald-500 text-emerald-700 bg-emerald-50/30 rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-500">
@@ -151,47 +128,47 @@
                     </div>
                 </div>
 
-                <div class="flex items-center space-x-2.5 sm:space-x-3.5 pt-3 sm:pt-0 sm:pl-4 border-t sm:border-t-0 border-l border-slate-100 sm:border-l-0">
-                    <div class="w-9 h-9 sm:w-11 sm:h-11 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center shrink-0 text-base sm:text-lg">
+                <div class="flex items-center space-x-3.5 pl-4">
+                    <div class="w-11 h-11 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center shrink-0 text-lg">
                         <i class="fa-solid fa-list-ol"></i>
                     </div>
                     <div>
-                        <div class="text-[10px] sm:text-[11px] font-semibold text-slate-400">服務總筆數</div>
-                        <div class="text-base sm:text-lg font-extrabold text-slate-900 leading-tight" id="totalRecords">0 筆</div>
-                        <div class="text-[10px] sm:text-[11px] text-slate-400 mt-0.5">已建檔紀錄</div>
+                        <div class="text-[11px] font-semibold text-slate-400">服務總筆數</div>
+                        <div class="text-lg font-extrabold text-slate-900 leading-tight" id="totalRecords">0 筆</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">已建檔紀錄</div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- 3. Form Start (新增服務紀錄) -->
-        <form id="serviceForm" class="bg-white border border-slate-200 rounded-xl p-4 sm:p-8 shadow-sm space-y-5 sm:space-y-6">
+        <form id="serviceForm" class="bg-white border border-slate-200 rounded-xl p-8 shadow-sm space-y-6">
             <div class="border-b border-slate-100 pb-3 mb-4 flex justify-between items-center gap-2">
-                <h2 class="text-base sm:text-lg font-semibold text-slate-900 flex items-center gap-2 truncate">
+                <h2 class="text-lg font-semibold text-slate-900 flex items-center gap-2">
                     <i id="formHeaderIcon" class="fa-solid fa-pen-to-square text-cyan-600 transition-colors shrink-0"></i>
-                    <span class="truncate">新增紀錄 (<span id="formSemesterBadge" class="text-cyan-700 font-bold">114-1</span> - <span id="formTeacherBadge" class="text-cyan-600 font-bold transition-colors">全校總覽</span>)</span>
+                    <span>新增紀錄 (<span id="formSemesterBadge" class="text-cyan-700 font-bold">114-1</span> - <span id="formTeacherBadge" class="text-cyan-600 font-bold transition-colors">全校總覽</span>)</span>
                 </h2>
                 <button type="button" onclick="addNewStudentPrompt()" 
-                        class="shrink-0 px-2.5 py-1.5 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition cursor-pointer border border-slate-200 flex items-center gap-1 shadow-sm">
+                        class="px-2.5 py-1.5 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition cursor-pointer border border-slate-200 flex items-center gap-1 shadow-sm">
                     <i id="addStudentIcon" class="fa-solid fa-user-plus text-cyan-600 transition-colors"></i>
                     <span>新增學生</span>
                 </button>
             </div>
 
-            <div class="space-y-5 sm:space-y-6">
+            <div class="space-y-6">
                 <div class="relative">
-                    <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">
                         服務學生姓名 <span class="text-red-500">*</span>
                     </label>
-                    <div class="flex flex-col sm:flex-row gap-2.5 sm:gap-3 items-start sm:items-center">
-                        <div class="relative w-full sm:w-1/2">
+                    <div class="flex gap-3 items-center">
+                        <div class="relative w-1/2">
                             <input type="text" id="studentName" placeholder="請輸入或搜尋姓名" autocomplete="off"
                                    oninput="filterStudents()" onfocus="filterStudents()"
-                                   class="w-full px-3 py-2 text-sm sm:text-base border border-slate-300 rounded-md text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition">
+                                   class="w-full px-3 py-2 text-base border border-slate-300 rounded-md text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition">
                             <div id="studentDropdown" class="hidden absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-md shadow-lg max-h-48 overflow-y-auto divide-y divide-slate-100">
                             </div>
                         </div>
-                        <div class="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
+                        <div class="flex items-center gap-1.5">
                             <span class="text-xs text-slate-400 mr-1 shrink-0"><i class="fa-solid fa-bolt text-amber-400"></i> 快速選擇：</span>
                             <div id="studentPillsContainer" class="flex flex-wrap gap-1.5 items-center">
                             </div>
@@ -199,76 +176,76 @@
                     </div>
                 </div>
 
-                <div class="w-full sm:w-1/2">
-                    <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
+                <div class="w-1/2">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">
                         服務日期 <span class="text-red-500">*</span>
                     </label>
                     <input type="date" id="serviceDate" required
-                           class="w-full px-3 py-2 text-sm sm:text-base border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition">
+                           class="w-full px-3 py-2 text-base border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition">
                 </div>
 
-                <div class="grid grid-cols-2 gap-3 sm:gap-6">
+                <div class="grid grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">
                             開始時間 <span class="text-red-500">*</span>
                         </label>
                         <input type="time" id="startTime" required onchange="calculateMinutes()"
-                               class="w-full px-2.5 py-2 text-sm sm:text-base border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition">
+                               class="w-full px-2.5 py-2 text-base border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition">
                     </div>
                     <div>
-                        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">
                             結束時間 <span class="text-red-500">*</span>
                         </label>
                         <input type="time" id="endTime" required onchange="calculateMinutes()"
-                               class="w-full px-2.5 py-2 text-sm sm:text-base border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition">
+                               class="w-full px-2.5 py-2 text-base border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition">
                     </div>
                 </div>
             </div>
 
             <div>
-                <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
+                <label class="block text-sm font-medium text-slate-700 mb-1">
                     總服務時間（分鐘） <span class="text-red-500">*</span>
                 </label>
                 <input type="number" id="durationMinutes" min="1" required placeholder="自動計算或手動輸入"
-                       class="w-full sm:w-1/2 px-3 py-2 text-sm sm:text-base border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition">
+                       class="w-1/2 px-3 py-2 text-base border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition">
             </div>
 
             <hr class="border-slate-100">
 
             <div>
-                <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-2 sm:mb-3">
+                <label class="block text-sm font-medium text-slate-700 mb-3">
                     服務對象 <span class="text-red-500">*</span>
                 </label>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
-                    <label class="flex items-center space-x-2 cursor-pointer text-xs sm:text-sm text-slate-700">
+                <div class="grid grid-cols-4 gap-3">
+                    <label class="flex items-center space-x-2 cursor-pointer text-sm text-slate-700">
                         <input type="checkbox" name="target" value="學生本人" checked class="w-4 h-4 rounded border-slate-300 focus:ring-cyan-500">
                         <span>學生本人</span>
                     </label>
-                    <label class="flex items-center space-x-2 cursor-pointer text-xs sm:text-sm text-slate-700">
+                    <label class="flex items-center space-x-2 cursor-pointer text-sm text-slate-700">
                         <input type="checkbox" name="target" value="家長" class="w-4 h-4 rounded border-slate-300 focus:ring-cyan-500">
                         <span>家長</span>
                     </label>
-                    <label class="flex items-center space-x-2 cursor-pointer text-xs sm:text-sm text-slate-700">
+                    <label class="flex items-center space-x-2 cursor-pointer text-sm text-slate-700">
                         <input type="checkbox" name="target" value="導師" class="w-4 h-4 rounded border-slate-300 focus:ring-cyan-500">
                         <span>導師</span>
                     </label>
-                    <label class="flex items-center space-x-2 cursor-pointer text-xs sm:text-sm text-slate-700">
+                    <label class="flex items-center space-x-2 cursor-pointer text-sm text-slate-700">
                         <input type="checkbox" name="target" value="任科教師" class="w-4 h-4 rounded border-slate-300 focus:ring-cyan-500">
                         <span>任科教師</span>
                     </label>
-                    <label class="flex items-center space-x-2 cursor-pointer text-xs sm:text-sm text-slate-700">
+                    <label class="flex items-center space-x-2 cursor-pointer text-sm text-slate-700">
                         <input type="checkbox" name="target" value="輔導教師" class="w-4 h-4 rounded border-slate-300 focus:ring-cyan-500">
                         <span>輔導教師</span>
                     </label>
-                    <label class="flex items-center space-x-2 cursor-pointer text-xs sm:text-sm text-slate-700">
+                    <label class="flex items-center space-x-2 cursor-pointer text-sm text-slate-700">
                         <input type="checkbox" name="target" value="行政人員" class="w-4 h-4 rounded border-slate-300 focus:ring-cyan-500">
                         <span>行政人員</span>
                     </label>
-                    <label class="flex items-center space-x-2 cursor-pointer text-xs sm:text-sm text-slate-700 col-span-2 sm:col-span-1">
+                    <label class="flex items-center space-x-2 cursor-pointer text-sm text-slate-700">
                         <input type="checkbox" name="target" value="其他相關專業人員" class="w-4 h-4 rounded border-slate-300 focus:ring-cyan-500">
                         <span>其他相關專業人員</span>
                     </label>
-                    <label class="flex items-center space-x-2 cursor-pointer text-xs sm:text-sm text-slate-700">
+                    <label class="flex items-center space-x-2 cursor-pointer text-sm text-slate-700">
                         <input type="checkbox" name="target" value="同儕" class="w-4 h-4 rounded border-slate-300 focus:ring-cyan-500">
                         <span>同儕</span>
                     </label>
@@ -276,35 +253,35 @@
             </div>
 
             <div>
-                <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-2 sm:mb-3">
+                <label class="block text-sm font-medium text-slate-700 mb-3">
                     間接服務內容 <span class="text-red-500">*</span>
                 </label>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
-                    <label class="flex items-center space-x-2 cursor-pointer text-xs sm:text-sm text-slate-700">
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="flex items-center space-x-2 cursor-pointer text-sm text-slate-700">
                         <input type="checkbox" name="content" value="需求評估與處理" class="w-4 h-4 rounded border-slate-300 focus:ring-cyan-500">
                         <span>需求評估與處理</span>
                     </label>
-                    <label class="flex items-center space-x-2 cursor-pointer text-xs sm:text-sm text-slate-700">
+                    <label class="flex items-center space-x-2 cursor-pointer text-sm text-slate-700">
                         <input type="checkbox" name="content" value="入班支援" class="w-4 h-4 rounded border-slate-300 focus:ring-cyan-500">
                         <span>入班支援</span>
                     </label>
-                    <label class="flex items-center space-x-2 cursor-pointer text-xs sm:text-sm text-slate-700">
+                    <label class="flex items-center space-x-2 cursor-pointer text-sm text-slate-700">
                         <input type="checkbox" name="content" value="個別晤談或指導" class="w-4 h-4 rounded border-slate-300 focus:ring-cyan-500">
                         <span>個別晤談或指導</span>
                     </label>
-                    <label class="flex items-center space-x-2 cursor-pointer text-xs sm:text-sm text-slate-700">
+                    <label class="flex items-center space-x-2 cursor-pointer text-sm text-slate-700">
                         <input type="checkbox" name="content" value="與普教教師合作教學" class="w-4 h-4 rounded border-slate-300 focus:ring-cyan-500">
                         <span>與普教教師合作教學</span>
                     </label>
-                    <label class="flex items-center space-x-2 cursor-pointer text-xs sm:text-sm text-slate-700">
+                    <label class="flex items-center space-x-2 cursor-pointer text-sm text-slate-700">
                         <input type="checkbox" name="content" value="諮詢服務" class="w-4 h-4 rounded border-slate-300 focus:ring-cyan-500">
                         <span>諮詢服務</span>
                     </label>
-                    <label class="flex items-center space-x-2 cursor-pointer text-xs sm:text-sm text-slate-700">
+                    <label class="flex items-center space-x-2 cursor-pointer text-sm text-slate-700">
                         <input type="checkbox" name="content" value="參與專業服務" class="w-4 h-4 rounded border-slate-300 focus:ring-cyan-500">
                         <span>參與專業服務</span>
                     </label>
-                    <label class="flex items-center space-x-2 cursor-pointer text-xs sm:text-sm text-slate-700 sm:col-span-2">
+                    <label class="flex items-center space-x-2 cursor-pointer text-sm text-slate-700 col-span-2">
                         <input type="checkbox" name="content" value="其他特殊教育相關服務事項" class="w-4 h-4 rounded border-slate-300 focus:ring-cyan-500">
                         <span>其他特殊教育相關服務事項</span>
                     </label>
@@ -312,52 +289,52 @@
             </div>
 
             <div>
-                <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">備註</label>
+                <label class="block text-sm font-medium text-slate-700 mb-1">備註</label>
                 <textarea id="notes" rows="3" placeholder="請輸入備註內容..." 
-                          class="w-full px-3 py-2 text-sm sm:text-base border border-slate-300 rounded-md text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"></textarea>
+                          class="w-full px-3 py-2 text-base border border-slate-300 rounded-md text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"></textarea>
             </div>
 
             <div class="flex justify-between items-center pt-4 border-t border-slate-100">
                 <button type="submit" id="submitBtn"
-                        class="bg-cyan-600 hover:bg-cyan-700 text-white font-medium px-5 py-2.5 rounded-md shadow-sm transition duration-150 flex items-center space-x-2 text-sm sm:text-base">
+                        class="bg-cyan-600 hover:bg-cyan-700 text-white font-medium px-5 py-2.5 rounded-md shadow-sm transition duration-150 flex items-center space-x-2 text-base">
                     <i class="fa-solid fa-check"></i>
                     <span>提交紀錄</span>
                 </button>
-                <button type="button" onclick="resetForm()" class="text-slate-500 hover:text-slate-700 text-xs sm:text-sm font-medium px-3 py-2">
+                <button type="button" onclick="resetForm()" class="text-slate-500 hover:text-slate-700 text-sm font-medium px-3 py-2">
                     清除內容
                 </button>
             </div>
         </form>
 
         <!-- 4. History Records Section (歷史紀錄區塊) -->
-        <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-8 shadow-sm space-y-4">
+        <div class="bg-white border border-slate-200 rounded-xl p-8 shadow-sm space-y-4">
             
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-2 gap-3">
-                <h2 class="text-base sm:text-lg font-semibold text-slate-900 flex items-center gap-2 truncate">
+            <div class="flex justify-between items-center pb-2 gap-3">
+                <h2 class="text-lg font-semibold text-slate-900 flex items-center gap-2">
                     <i id="tableHeaderIcon" class="fa-solid fa-list-check text-cyan-600 transition-colors shrink-0"></i>
-                    <span class="truncate">歷史紀錄 [<span id="tableSemesterTitle" class="text-cyan-700 font-bold">114-1</span>] (<span id="tableTeacherTitle">全體教師紀錄</span>)</span>
+                    <span>歷史紀錄 [<span id="tableSemesterTitle" class="text-cyan-700 font-bold">114-1</span>] (<span id="tableTeacherTitle">全體教師紀錄</span>)</span>
                 </h2>
                 <button onclick="exportToExcel()" 
-                        class="w-full sm:w-auto justify-center bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-medium px-4 py-2 rounded-md shadow-sm transition flex items-center gap-2">
+                        class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2 rounded-md shadow-sm transition flex items-center gap-2">
                     <i class="fa-solid fa-file-excel"></i>
                     <span>匯出 Excel (.xlsx)</span>
                 </button>
             </div>
 
             <!-- 搜尋與篩選工具列 -->
-            <div class="bg-slate-50/60 border border-slate-200/80 rounded-2xl p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-3">
-                <div class="relative w-full sm:w-80">
+            <div class="bg-slate-50/60 border border-slate-200/80 rounded-2xl p-4 flex items-center justify-between gap-3">
+                <div class="relative w-80">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
-                        <i class="fa-solid fa-magnifying-glass text-xs sm:text-sm"></i>
+                        <i class="fa-solid fa-magnifying-glass text-sm"></i>
                     </span>
                     <input type="text" id="searchQuery" oninput="renderTable()" placeholder="搜尋學生、備註..." 
-                           class="w-full pl-9 pr-3 py-1.5 sm:py-2 bg-white border border-cyan-500/80 rounded-full text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 transition shadow-sm">
+                           class="w-full pl-9 pr-3 py-2 bg-white border border-cyan-500/80 rounded-full text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 transition shadow-sm">
                 </div>
 
-                <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-end">
-                    <div class="relative flex-1 sm:flex-none">
+                <div class="flex items-center gap-3">
+                    <div class="relative">
                         <select id="filterStudent" onchange="renderTable()" 
-                                class="w-full sm:w-auto appearance-none bg-slate-100/80 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs sm:text-sm font-medium rounded-xl px-3 sm:px-4 py-1.5 sm:py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 cursor-pointer transition truncate">
+                                class="appearance-none bg-slate-100/80 hover:bg-slate-100 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 cursor-pointer transition">
                         </select>
                         <span class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-slate-500">
                             <i class="fa-solid fa-chevron-down text-xs"></i>
@@ -365,15 +342,15 @@
                     </div>
 
                     <button type="button" onclick="clearFilters()" 
-                            class="text-red-500 hover:text-red-600 font-medium text-xs sm:text-sm flex items-center gap-1 px-2 py-1 rounded-md transition cursor-pointer shrink-0">
+                            class="text-red-500 hover:text-red-600 font-medium text-sm flex items-center gap-1 px-2 py-1 rounded-md transition cursor-pointer shrink-0">
                         <i class="fa-regular fa-trash-can"></i>
                         <span>清空</span>
                     </button>
                 </div>
             </div>
 
-            <div class="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
-                <table class="w-full text-left border-collapse min-w-[700px]">
+            <div>
+                <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-slate-50/80 text-slate-600 text-xs font-bold border-b border-slate-200">
                             <th class="p-3 whitespace-nowrap">學期</th>
@@ -392,44 +369,44 @@
                 </table>
             </div>
 
-            <div id="noDataMessage" class="text-center py-8 sm:py-10 text-slate-400 hidden">
-                <i class="fa-regular fa-folder-open text-3xl sm:text-4xl mb-2"></i>
-                <p class="text-xs sm:text-sm">無符合條件的服務紀錄</p>
+            <div id="noDataMessage" class="text-center py-10 text-slate-400 hidden">
+                <i class="fa-regular fa-folder-open text-4xl mb-2"></i>
+                <p class="text-sm">無符合條件的服務紀錄</p>
             </div>
         </div>
 
         <!-- 5. Dashboard Analytics -->
-        <div class="space-y-4 sm:space-y-6 pt-2">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-sm flex justify-between items-center">
+        <div class="space-y-6 pt-2">
+            <div class="grid grid-cols-3 gap-4">
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex justify-between items-center">
                     <div>
                         <div class="text-xs font-semibold text-slate-400 mb-1">累計服務總筆數</div>
-                        <div class="text-xl sm:text-2xl font-extrabold text-slate-900" id="cardTotalRecords">0 筆</div>
+                        <div class="text-2xl font-extrabold text-slate-900" id="cardTotalRecords">0 筆</div>
                         <div class="text-xs text-slate-400 font-medium mt-1">平均每筆 <span id="cardAvgMins">0</span> 分鐘</div>
                     </div>
-                    <div id="analyticsCardIcon" class="w-10 h-10 sm:w-11 sm:h-11 bg-cyan-50 text-cyan-600 rounded-2xl flex items-center justify-center text-base sm:text-lg transition-colors">
+                    <div id="analyticsCardIcon" class="w-11 h-11 bg-cyan-50 text-cyan-600 rounded-2xl flex items-center justify-center text-lg transition-colors">
                         <i class="fa-solid fa-folder"></i>
                     </div>
                 </div>
 
-                <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-sm flex justify-between items-center">
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex justify-between items-center">
                     <div>
                         <div class="text-xs font-semibold text-slate-400 mb-1">本月服務分鐘</div>
-                        <div class="text-xl sm:text-2xl font-extrabold text-slate-900"><span id="cardMonthMins">0</span>m</div>
+                        <div class="text-2xl font-extrabold text-slate-900"><span id="cardMonthMins">0</span>m</div>
                         <div class="text-xs text-emerald-600 font-medium mt-1 flex items-center gap-1">
                             <i class="fa-solid fa-calendar-days text-[10px]"></i>
                             <span>本月累計時數</span>
                         </div>
                     </div>
-                    <div class="w-10 h-10 sm:w-11 sm:h-11 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center text-base sm:text-lg">
+                    <div class="w-11 h-11 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center text-lg">
                         <i class="fa-solid fa-chart-pie"></i>
                     </div>
                 </div>
 
-                <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-sm flex flex-col justify-between">
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col justify-between">
                     <div class="flex justify-between items-center">
                         <div class="text-xs font-semibold text-slate-400">學期目標進度 (<span id="goalLabelHours">40</span>H)</div>
-                        <div class="text-xs sm:text-sm font-bold text-cyan-600" id="goalPercent">0%</div>
+                        <div class="text-sm font-bold text-cyan-600" id="goalPercent">0%</div>
                     </div>
                     <div class="w-full bg-slate-100 rounded-full h-2.5 my-2">
                         <div id="goalProgressBar" class="bg-cyan-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
@@ -439,39 +416,39 @@
                         <div class="flex items-center gap-1">
                             <span>目標小時:</span>
                             <input type="number" id="goalHoursInput" value="40" min="1" max="500" onchange="updateGoalHours()" 
-                                   class="w-10 sm:w-12 px-1 py-0.5 text-center text-xs font-bold border border-emerald-500 text-emerald-700 bg-emerald-50/30 rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                                   class="w-12 px-1 py-0.5 text-center text-xs font-bold border border-emerald-500 text-emerald-700 bg-emerald-50/30 rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-500">
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-                <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-sm">
-                    <h3 class="text-xs sm:text-sm font-bold text-slate-800 mb-3 sm:mb-4 flex items-center gap-2">
+            <div class="grid grid-cols-3 gap-6">
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                    <h3 class="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
                         <i id="chartTargetIcon" class="fa-solid fa-chart-pie text-cyan-500 transition-colors"></i>
                         服務對象分布占比
                     </h3>
-                    <div class="h-48 sm:h-56 relative flex items-center justify-center">
+                    <div class="h-56 relative flex items-center justify-center">
                         <canvas id="targetChart"></canvas>
                     </div>
                 </div>
 
-                <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-sm">
-                    <h3 class="text-xs sm:text-sm font-bold text-slate-800 mb-3 sm:mb-4 flex items-center gap-2">
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                    <h3 class="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
                         <i id="chartContentIcon" class="fa-solid fa-bars-staggered text-sky-500 transition-colors"></i>
                         間接服務內容統計
                     </h3>
-                    <div class="h-48 sm:h-56">
+                    <div class="h-56">
                         <canvas id="contentChart"></canvas>
                     </div>
                 </div>
 
-                <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-sm">
-                    <h3 class="text-xs sm:text-sm font-bold text-slate-800 mb-3 sm:mb-4 flex items-center gap-2">
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                    <h3 class="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
                         <i class="fa-solid fa-chart-line text-emerald-500"></i>
                         月度服務時間趨勢 (分鐘)
                     </h3>
-                    <div class="h-48 sm:h-56">
+                    <div class="h-56">
                         <canvas id="trendChart"></canvas>
                     </div>
                 </div>
@@ -482,9 +459,9 @@
 
     <!-- 6. 學期管理 Modal -->
     <div id="semesterModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full p-5 sm:p-6 space-y-4">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                <h3 class="text-base sm:text-lg font-bold text-slate-900">管理學期清單</h3>
+                <h3 class="text-lg font-bold text-slate-900">管理學期清單</h3>
                 <button onclick="closeSemesterManageModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             
@@ -501,9 +478,9 @@
 
     <!-- 7. 教師名單管理 Modal -->
     <div id="teacherModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full p-5 sm:p-6 space-y-4">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                <h3 class="text-base sm:text-lg font-bold text-slate-900">管理教師名單</h3>
+                <h3 class="text-lg font-bold text-slate-900">管理教師名單</h3>
                 <button onclick="closeTeacherManageModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             
@@ -520,18 +497,18 @@
 
     <!-- 8. 螢幕中央提醒 Modal -->
     <div id="alertModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-sm w-full p-5 sm:p-6 text-center">
-            <div class="w-12 h-12 sm:w-14 sm:h-14 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 text-xl sm:text-2xl border border-red-100">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-sm w-full p-6 text-center">
+            <div class="w-14 h-14 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl border border-red-100">
                 <i class="fa-solid fa-triangle-exclamation"></i>
             </div>
-            <h3 class="text-base sm:text-lg font-bold text-slate-900 mb-2">資料未填寫完整</h3>
-            <div id="alertModalMessages" class="text-slate-600 text-xs sm:text-sm space-y-1.5 mb-5 sm:mb-6 bg-red-50/50 p-3 rounded-xl border border-red-100 text-left"></div>
-            <button type="button" onclick="closeAlertModal()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-2 sm:py-2.5 rounded-xl shadow-md text-sm">我知道了</button>
+            <h3 class="text-lg font-bold text-slate-900 mb-2">資料未填寫完整</h3>
+            <div id="alertModalMessages" class="text-slate-600 text-sm space-y-1.5 mb-6 bg-red-50/50 p-3 rounded-xl border border-red-100 text-left"></div>
+            <button type="button" onclick="closeAlertModal()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-2.5 rounded-xl shadow-md text-sm">我知道了</button>
         </div>
     </div>
 
     <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-5 right-5 left-5 sm:left-auto bg-slate-900 text-white px-4 py-3 rounded-md shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 flex items-center justify-center sm:justify-start space-x-2 text-xs sm:text-sm z-50">
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-md shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 flex items-center justify-start space-x-2 text-sm z-50">
         <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
         <span id="toastMsg">紀錄新增成功！</span>
     </div>
@@ -639,9 +616,6 @@
             }
 
             fetchRecordsFromGAS();
-
-            // 每 15 秒自動輪詢（同步其他人的新增或刪除資料）
-            setInterval(fetchRecordsFromGAS, 15000);
         };
 
         // GAS 雙向同步核心函式
@@ -908,19 +882,19 @@
             const manageBtn = document.getElementById('manageTeacherBtn');
 
             if (theme.isDarkText) {
-                topHeader.className = "rounded-2xl p-4 sm:p-5 shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-all duration-300 text-slate-900 border border-sky-200";
-                selectSem.className = "bg-white/70 border border-slate-400/50 text-slate-900 font-bold rounded-xl px-3 py-1.5 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-slate-500 cursor-pointer shadow-sm max-w-[130px] sm:max-w-none truncate";
-                selectEl.className = "bg-white/70 border border-slate-400/50 text-slate-900 font-bold rounded-xl px-3 py-1.5 sm:px-3.5 sm:py-1.5 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-slate-500 cursor-pointer shadow-sm max-w-[160px] sm:max-w-none truncate";
+                topHeader.className = "rounded-2xl p-5 shadow-md flex justify-between items-center gap-4 transition-all duration-300 text-slate-900 border border-sky-200";
+                selectSem.className = "bg-white/70 border border-slate-400/50 text-slate-900 font-bold rounded-xl px-3 py-1.5 text-base focus:outline-none focus:ring-2 focus:ring-slate-500 cursor-pointer shadow-sm";
+                selectEl.className = "bg-white/70 border border-slate-400/50 text-slate-900 font-bold rounded-xl px-3.5 py-1.5 text-base focus:outline-none focus:ring-2 focus:ring-slate-500 cursor-pointer shadow-sm";
                 subLabel.className = "text-[11px] text-slate-800 font-bold";
                 iconBox.className = "w-11 h-11 bg-white/50 rounded-xl flex items-center justify-center text-slate-900 border border-slate-300/60 shrink-0";
-                manageBtn.className = "px-3.5 py-2 text-xs bg-white/60 hover:bg-white/90 text-slate-900 font-bold rounded-xl transition duration-150 cursor-pointer border border-slate-300 flex items-center justify-center gap-2 shadow-sm flex-1 sm:flex-none";
+                manageBtn.className = "px-3.5 py-2 text-xs bg-white/60 hover:bg-white/90 text-slate-900 font-bold rounded-xl transition duration-150 cursor-pointer border border-slate-300 flex items-center justify-center gap-2 shadow-sm";
             } else {
-                topHeader.className = "rounded-2xl p-4 sm:p-5 shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-all duration-300 text-white border-0";
-                selectSem.className = "bg-black/20 border border-white/30 text-white font-bold rounded-xl px-3 py-1.5 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer max-w-[130px] sm:max-w-none truncate";
-                selectEl.className = "bg-black/20 border border-white/30 text-white font-bold rounded-xl px-3.5 py-1.5 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer max-w-[160px] sm:max-w-none truncate";
+                topHeader.className = "rounded-2xl p-5 shadow-md flex justify-between items-center gap-4 transition-all duration-300 text-white border-0";
+                selectSem.className = "bg-black/20 border border-white/30 text-white font-bold rounded-xl px-3 py-1.5 text-base focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer";
+                selectEl.className = "bg-black/20 border border-white/30 text-white font-bold rounded-xl px-3.5 py-1.5 text-base focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer";
                 subLabel.className = "text-[11px] text-white/80 font-medium";
                 iconBox.className = "w-11 h-11 bg-white/10 rounded-xl flex items-center justify-center text-white border border-white/20 shrink-0";
-                manageBtn.className = "px-3.5 py-2 text-xs bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition duration-150 cursor-pointer border border-white/20 flex items-center justify-center gap-2 shadow-sm flex-1 sm:flex-none";
+                manageBtn.className = "px-3.5 py-2 text-xs bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition duration-150 cursor-pointer border border-white/20 flex items-center justify-center gap-2 shadow-sm";
             }
 
             document.getElementById('formTeacherBadge').className = `${theme.textPrimaryClass} font-bold transition-colors`;
@@ -929,12 +903,12 @@
             document.getElementById('tableHeaderIcon').className = `fa-solid fa-list-check ${theme.textPrimaryClass} transition-colors`;
 
             const btnTextColor = theme.isDarkText ? "text-slate-900" : "text-white";
-            document.getElementById('submitBtn').className = `${theme.btnPrimaryClass} ${btnTextColor} font-medium px-5 py-2.5 rounded-md shadow-sm transition duration-150 flex items-center space-x-2 text-sm sm:text-base`;
+            document.getElementById('submitBtn').className = `${theme.btnPrimaryClass} ${btnTextColor} font-medium px-5 py-2.5 rounded-md shadow-sm transition duration-150 flex items-center space-x-2 text-base`;
             document.getElementById('modalAddBtn').className = `px-4 py-2 ${theme.btnPrimaryClass} ${btnTextColor} rounded-md text-sm font-medium transition-colors`;
 
-            document.getElementById('statCard1Icon').className = `w-9 h-9 sm:w-11 sm:h-11 ${theme.bgLightClass} ${theme.textPrimaryClass} rounded-2xl flex items-center justify-center shrink-0 text-base sm:text-lg transition-colors`;
-            document.getElementById('analyticsCardIcon').className = `w-10 h-10 sm:w-11 sm:h-11 ${theme.bgLightClass} ${theme.textPrimaryClass} rounded-2xl flex items-center justify-center text-base sm:text-lg transition-colors`;
-            document.getElementById('goalPercent').className = `text-xs sm:text-sm font-bold ${theme.textPrimaryClass}`;
+            document.getElementById('statCard1Icon').className = `w-11 h-11 ${theme.bgLightClass} ${theme.textPrimaryClass} rounded-2xl flex items-center justify-center shrink-0 text-lg transition-colors`;
+            document.getElementById('analyticsCardIcon').className = `w-11 h-11 ${theme.bgLightClass} ${theme.textPrimaryClass} rounded-2xl flex items-center justify-center text-lg transition-colors`;
+            document.getElementById('goalPercent').className = `text-sm font-bold ${theme.textPrimaryClass}`;
             document.getElementById('goalProgressBar').className = `${theme.btnPrimaryClass.split(' ')[0]} h-2.5 rounded-full transition-all duration-500`;
 
             renderStudentPills();
