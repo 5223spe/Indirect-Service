@@ -44,15 +44,21 @@
 
     <div class="max-w-5xl mx-auto space-y-6">
 
-        <!-- 0. 頂部身份切換與教師管理列 -->
+        <!-- 0. 頂部身份切換與學期/教師管理列 -->
         <div id="topHeaderBar" class="bg-[#0c4a6e] text-white rounded-2xl p-4 sm:p-5 shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-all duration-300">
-            <div class="flex items-center gap-3.5">
+            <div class="flex items-center gap-3.5 flex-wrap">
                 <div id="headerIconBox" class="w-11 h-11 bg-white/10 rounded-xl flex items-center justify-center text-white border border-white/20">
                     <i class="fa-solid fa-user-tie text-xl"></i>
                 </div>
                 <div>
-                    <div id="headerSubLabel" class="text-[11px] text-white/80 font-medium">當前切換 / 填寫教師</div>
-                    <div class="text-lg font-bold flex items-center gap-2 mt-0.5">
+                    <div id="headerSubLabel" class="text-[11px] text-white/80 font-medium">當前切換 / 填寫環境</div>
+                    <div class="text-lg font-bold flex flex-wrap items-center gap-2 mt-0.5">
+                        <!-- 學期切換選單 -->
+                        <select id="activeSemesterSelect" onchange="switchSemester()" 
+                                class="bg-black/20 border border-white/30 text-white font-bold rounded-xl px-3 py-1.5 text-base focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer">
+                            <!-- 動態填入學期 -->
+                        </select>
+                        <!-- 教師切換選單 -->
                         <select id="activeTeacherSelect" onchange="switchTeacher()" 
                                 class="bg-black/20 border border-white/30 text-white font-bold rounded-xl px-3.5 py-1.5 text-base focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer">
                             <!-- 動態填入教師 -->
@@ -61,7 +67,12 @@
                 </div>
             </div>
 
-            <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+            <div class="flex items-center gap-2 w-full sm:w-auto justify-end flex-wrap">
+                <button type="button" onclick="openSemesterManageModal()" 
+                        class="px-3 py-2 text-xs bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition duration-150 cursor-pointer border border-white/20 flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-calendar-plus"></i>
+                    <span>學期管理</span>
+                </button>
                 <button type="button" id="manageTeacherBtn" onclick="openTeacherManageModal()" 
                         class="px-3.5 py-2 text-xs bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition duration-150 cursor-pointer border border-white/20 flex items-center gap-2 shadow-sm">
                     <i class="fa-solid fa-gear"></i>
@@ -73,10 +84,10 @@
         <!-- 1. Header (網頁名稱與說明) -->
         <div class="border-b border-slate-200 pb-4">
             <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight mb-2">
-                <span id="headerTeacherName">全校彙整</span> 間接服務紀錄表
+                [<span id="headerSemesterTitle" class="text-cyan-700">114-1</span>] <span id="headerTeacherName">全校彙整</span> 間接服務紀錄表
             </h1>
             <p class="text-slate-500 text-sm">
-                請填寫間接服務紀錄。系統支援多位教師切換紀錄、全校總覽統計與匯出標準 Excel 報表。
+                請填寫間接服務紀錄。系統支援跨學期切換、多位教師紀錄、全校總覽統計與匯出標準 Excel 報表。
             </p>
         </div>
 
@@ -150,7 +161,7 @@
             <div class="border-b border-slate-100 pb-3 mb-4 flex justify-between items-center">
                 <h2 class="text-lg font-semibold text-slate-900 flex items-center gap-2">
                     <i id="formHeaderIcon" class="fa-solid fa-pen-to-square text-cyan-600 transition-colors"></i>
-                    新增服務紀錄 (<span id="formTeacherBadge" class="text-cyan-600 font-bold transition-colors">全校總覽</span>)
+                    新增服務紀錄 (<span id="formSemesterBadge" class="text-cyan-700 font-bold">114-1</span> - <span id="formTeacherBadge" class="text-cyan-600 font-bold transition-colors">全校總覽</span>)
                 </h2>
                 <button type="button" onclick="addNewStudentPrompt()" 
                         class="px-3 py-1.5 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition cursor-pointer border border-slate-200 flex items-center gap-1.5 shadow-sm">
@@ -330,7 +341,7 @@
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-2 gap-3">
                 <h2 class="text-lg font-semibold text-slate-900 flex items-center gap-2">
                     <i id="tableHeaderIcon" class="fa-solid fa-list-check text-cyan-600 transition-colors"></i>
-                    歷史服務紀錄 (<span id="tableTeacherTitle">全體教師紀錄</span>)
+                    歷史服務紀錄 [<span id="tableSemesterTitle" class="text-cyan-700 font-bold">114-1</span>] (<span id="tableTeacherTitle">全體教師紀錄</span>)
                 </h2>
                 <button onclick="exportToExcel()" 
                         class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2 rounded-md shadow-sm transition flex items-center gap-2">
@@ -372,6 +383,7 @@
                 <table class="w-full text-left border-collapse min-w-[700px]">
                     <thead>
                         <tr class="bg-slate-50/80 text-slate-600 text-xs font-bold border-b border-slate-200">
+                            <th class="p-3 whitespace-nowrap">學期</th>
                             <th class="p-3 whitespace-nowrap">填表教師</th>
                             <th class="p-3 whitespace-nowrap">學生</th>
                             <th class="p-3 whitespace-nowrap">日期</th>
@@ -476,7 +488,27 @@
 
     </div>
 
-    <!-- 6. 教師名單管理 Modal -->
+    <!-- 6. 學期管理 Modal -->
+    <div id="semesterModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="text-lg font-bold text-slate-900">管理學期清單</h3>
+                <button onclick="closeSemesterManageModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <div class="space-y-3">
+                <div class="flex gap-2">
+                    <input type="text" id="newSemesterInput" placeholder="例如: 114-2" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm">
+                    <button onclick="addNewSemester()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-md text-sm font-medium transition-colors">新增學期</button>
+                </div>
+                <div id="semesterListContainer" class="space-y-2 max-h-48 overflow-y-auto pt-2">
+                    <!-- 動態插入學期列表 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. 教師名單管理 Modal -->
     <div id="teacherModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -496,7 +528,7 @@
         </div>
     </div>
 
-    <!-- 7. 螢幕中央提醒 Modal -->
+    <!-- 8. 螢幕中央提醒 Modal -->
     <div id="alertModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-sm w-full p-6 text-center">
             <div class="w-14 h-14 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl border border-red-100">
@@ -517,6 +549,10 @@
     <script>
         // ⚠️ 請替換為您在 Google Apps Script 部署取得的 Web App API 網址 ⚠️
         const GAS_API_URL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";
+
+        const defaultSemesters = ["114-1", "114-2", "115-1"];
+        let semesters = [];
+        let currentSemester = "114-1";
 
         const defaultTeachers = [];
         let teachers = [];
@@ -583,15 +619,26 @@
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('serviceDate').value = today;
             
+            loadSemesters();
             loadTeachers();
             loadStudentListMap();
 
             // 1. 讀取 URL 專屬網址參數
             const urlParams = new URLSearchParams(window.location.search);
             const teacherParam = urlParams.get('teacher');
+            const semesterParam = urlParams.get('semester');
 
             // 2. 讀取瀏覽器上次紀錄
             const savedTeacher = localStorage.getItem('zhu_current_teacher');
+            const savedSemester = localStorage.getItem('zhu_current_semester');
+
+            if (semesterParam && semesters.includes(semesterParam)) {
+                currentSemester = semesterParam;
+            } else if (savedSemester && semesters.includes(savedSemester)) {
+                currentSemester = savedSemester;
+            } else if (semesters.length > 0) {
+                currentSemester = semesters[0];
+            }
 
             if (teacherParam && teachers.includes(teacherParam)) {
                 currentTeacher = teacherParam;
@@ -603,6 +650,9 @@
                 currentTeacher = "ALL";
             }
 
+            const semSelect = document.getElementById('activeSemesterSelect');
+            if (semSelect) semSelect.value = currentSemester;
+
             const select = document.getElementById('activeTeacherSelect');
             if (select) {
                 select.value = currentTeacher;
@@ -612,6 +662,89 @@
             fetchRecordsFromGAS();
         };
 
+        /* ---- 學期管理邏輯 ---- */
+        function loadSemesters() {
+            const stored = localStorage.getItem('zhu_semester_list');
+            semesters = stored ? JSON.parse(stored) : [...defaultSemesters];
+            renderSemesterSelect();
+        }
+
+        function saveSemesters() {
+            localStorage.setItem('zhu_semester_list', JSON.stringify(semesters));
+            renderSemesterSelect();
+        }
+
+        function renderSemesterSelect() {
+            const select = document.getElementById('activeSemesterSelect');
+            select.innerHTML = '';
+            
+            semesters.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s;
+                opt.innerText = `${s} 學期`;
+                select.appendChild(opt);
+            });
+
+            select.value = semesters.includes(currentSemester) ? currentSemester : semesters[0];
+            switchSemester();
+        }
+
+        function switchSemester() {
+            const val = document.getElementById('activeSemesterSelect').value;
+            currentSemester = val;
+            localStorage.setItem('zhu_current_semester', val);
+
+            document.getElementById('headerSemesterTitle').innerText = val;
+            document.getElementById('formSemesterBadge').innerText = val;
+            document.getElementById('tableSemesterTitle').innerText = val;
+
+            render();
+        }
+
+        function openSemesterManageModal() {
+            const container = document.getElementById('semesterListContainer');
+            container.innerHTML = '';
+            semesters.forEach((s, i) => {
+                const div = document.createElement('div');
+                div.className = 'flex justify-between items-center bg-slate-50 p-2 rounded-lg border border-slate-200 text-sm';
+                div.innerHTML = `
+                    <span class="font-bold text-slate-700">${s} 學期</span>
+                    <button onclick="removeSemester(${i})" class="text-red-500 hover:text-red-700 px-1.5"><i class="fa-solid fa-trash"></i></button>
+                `;
+                container.appendChild(div);
+            });
+            document.getElementById('semesterModal').classList.remove('hidden');
+        }
+
+        function closeSemesterManageModal() {
+            document.getElementById('semesterModal').classList.add('hidden');
+        }
+
+        function addNewSemester() {
+            const name = document.getElementById('newSemesterInput').value.trim();
+            if (name && !semesters.includes(name)) {
+                semesters.push(name);
+                saveSemesters();
+                document.getElementById('newSemesterInput').value = '';
+                openSemesterManageModal();
+                showToast(`已新增學期：${name}`, 'success');
+            }
+        }
+
+        function removeSemester(index) {
+            const name = semesters[index];
+            if (semesters.length <= 1) {
+                showToast('至少需要保留一個學期！', 'error');
+                return;
+            }
+            if (confirm(`確定要移除「${name}」學期嗎？`)) {
+                semesters.splice(index, 1);
+                saveSemesters();
+                openSemesterManageModal();
+            }
+        }
+
+        /* ---- 教師管理與切換邏輯 ---- */
         function loadTeachers() {
             const stored = localStorage.getItem('zhu_teacher_list');
             teachers = stored ? JSON.parse(stored) : [...defaultTeachers];
@@ -644,35 +777,35 @@
         }
 
         function switchTeacher() {
-    const val = document.getElementById('activeTeacherSelect').value;
-    currentTeacher = val;
+            const val = document.getElementById('activeTeacherSelect').value;
+            currentTeacher = val;
 
-    // 記憶當前教師
-    localStorage.setItem('zhu_current_teacher', val);
+            // 記憶當前教師
+            localStorage.setItem('zhu_current_teacher', val);
 
-    // 【新增修正】切換教師時，清空學生輸入框與隱藏下拉選單
-    const studentInput = document.getElementById('studentName');
-    const studentDropdown = document.getElementById('studentDropdown');
-    if (studentInput) studentInput.value = '';
-    if (studentDropdown) {
-        studentDropdown.innerHTML = '';
-        studentDropdown.classList.add('hidden');
-    }
+            // 切換教師時，清空學生輸入框與隱藏下拉選單
+            const studentInput = document.getElementById('studentName');
+            const studentDropdown = document.getElementById('studentDropdown');
+            if (studentInput) studentInput.value = '';
+            if (studentDropdown) {
+                studentDropdown.innerHTML = '';
+                studentDropdown.classList.add('hidden');
+            }
 
-    if (val === "ALL") {
-        document.getElementById('headerTeacherName').innerText = "全校彙整";
-        document.getElementById('formTeacherBadge').innerText = "全校總覽";
-        document.getElementById('tableTeacherTitle').innerText = "全體教師紀錄";
-    } else {
-        document.getElementById('headerTeacherName').innerText = val;
-        document.getElementById('formTeacherBadge').innerText = `${val}老師`;
-        document.getElementById('tableTeacherTitle').innerText = `${val}老師`;
-    }
+            if (val === "ALL") {
+                document.getElementById('headerTeacherName').innerText = "全校彙整";
+                document.getElementById('formTeacherBadge').innerText = "全校總覽";
+                document.getElementById('tableTeacherTitle').innerText = "全體教師紀錄";
+            } else {
+                document.getElementById('headerTeacherName').innerText = val;
+                document.getElementById('formTeacherBadge').innerText = `${val}老師`;
+                document.getElementById('tableTeacherTitle').innerText = `${val}老師`;
+            }
 
-    applyDynamicTheme();
-    updateFilterStudentDropdown();
-    render();
-}
+            applyDynamicTheme();
+            updateFilterStudentDropdown();
+            render();
+        }
 
         function applyDynamicTheme() {
             const theme = getCurrentTheme();
@@ -681,6 +814,7 @@
             topHeader.style.backgroundColor = theme.headerBgColor;
             topHeader.style.backgroundImage = "none";
 
+            const selectSem = document.getElementById('activeSemesterSelect');
             const selectEl = document.getElementById('activeTeacherSelect');
             const subLabel = document.getElementById('headerSubLabel');
             const iconBox = document.getElementById('headerIconBox');
@@ -688,12 +822,14 @@
 
             if (theme.isDarkText) {
                 topHeader.className = "rounded-2xl p-4 sm:p-5 shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-all duration-300 text-slate-900 border border-sky-200";
+                selectSem.className = "bg-white/70 border border-slate-400/50 text-slate-900 font-bold rounded-xl px-3 py-1.5 text-base focus:outline-none focus:ring-2 focus:ring-slate-500 cursor-pointer shadow-sm";
                 selectEl.className = "bg-white/70 border border-slate-400/50 text-slate-900 font-bold rounded-xl px-3.5 py-1.5 text-base focus:outline-none focus:ring-2 focus:ring-slate-500 cursor-pointer shadow-sm";
                 subLabel.className = "text-[11px] text-slate-800 font-bold";
                 iconBox.className = "w-11 h-11 bg-white/50 rounded-xl flex items-center justify-center text-slate-900 border border-slate-300/60";
                 manageBtn.className = "px-3.5 py-2 text-xs bg-white/60 hover:bg-white/90 text-slate-900 font-bold rounded-xl transition duration-150 cursor-pointer border border-slate-300 flex items-center gap-2 shadow-sm";
             } else {
                 topHeader.className = "rounded-2xl p-4 sm:p-5 shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-all duration-300 text-white border-0";
+                selectSem.className = "bg-black/20 border border-white/30 text-white font-bold rounded-xl px-3 py-1.5 text-base focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer";
                 selectEl.className = "bg-black/20 border border-white/30 text-white font-bold rounded-xl px-3.5 py-1.5 text-base focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer";
                 subLabel.className = "text-[11px] text-white/80 font-medium";
                 iconBox.className = "w-11 h-11 bg-white/10 rounded-xl flex items-center justify-center text-white border border-white/20";
@@ -790,7 +926,7 @@
             try {
                 const res = await fetch(GAS_API_URL);
                 const data = await res.json();
-                records = data;
+                records = data.map(r => ({ ...r, semester: r.semester || "114-1" }));
                 render();
             } catch (e) {
                 console.error("GAS 載入失敗，改讀 LocalStorage", e);
@@ -801,6 +937,8 @@
         function loadRecordsLocal() {
             const stored = localStorage.getItem('zhu_teacher_service_records');
             records = stored ? JSON.parse(stored) : [];
+            // 相容舊資料補上預設學期
+            records = records.map(r => ({ ...r, semester: r.semester || "114-1" }));
             render();
         }
 
@@ -853,7 +991,6 @@
             if (storedMap) {
                 teacherStudentMap = JSON.parse(storedMap);
             } else {
-                // 相容舊資料或建立空結構
                 const oldList = localStorage.getItem('zhu_teacher_student_list');
                 const defaultList = oldList ? JSON.parse(oldList) : [];
                 teacherStudentMap = {};
@@ -869,7 +1006,6 @@
 
         function getCurrentTeacherStudents() {
             if (currentTeacher === "ALL") {
-                // 全校總覽時合併所有老師的學生並去重
                 const allList = [];
                 Object.values(teacherStudentMap).forEach(arr => {
                     arr.forEach(s => { if (!allList.includes(s)) allList.push(s); });
@@ -1030,6 +1166,7 @@
 
             const record = {
                 id: Date.now(),
+                semester: currentSemester,
                 teacherName: currentTeacher,
                 studentName: studentName,
                 serviceDate: serviceDate,
@@ -1048,7 +1185,7 @@
 
             render();
             resetForm();
-            showToast('服務紀錄新增成功！', 'success');
+            showToast(`[${currentSemester}] 服務紀錄新增成功！`, 'success');
         });
 
         function resetForm() {
@@ -1075,8 +1212,11 @@
         }
 
         function getFilteredRecords() {
-            if (currentTeacher === "ALL") return records;
-            return records.filter(r => r.teacherName === currentTeacher);
+            return records.filter(r => {
+                const matchSemester = (r.semester === currentSemester);
+                const matchTeacher = (currentTeacher === "ALL" || r.teacherName === currentTeacher);
+                return matchSemester && matchTeacher;
+            });
         }
 
         function render() {
@@ -1115,6 +1255,11 @@
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-slate-50/60 transition";
                     tr.innerHTML = `
+                        <td class="p-3 whitespace-nowrap font-bold text-xs align-top">
+                            <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
+                                ${escapeHtml(r.semester || '114-1')}
+                            </span>
+                        </td>
                         <td class="p-3 whitespace-nowrap font-bold text-xs align-top">
                             <span class="px-2.5 py-0.5 rounded-full border ${badgeClass}">
                                 ${escapeHtml(r.teacherName || '未指定')}
@@ -1260,12 +1405,12 @@
         async function exportToExcel() {
             const filteredData = getFilteredRecords();
             if (filteredData.length === 0) {
-                showToast('目前尚無資料可供匯出！', 'error');
+                showToast('目前學期尚無資料可供匯出！', 'error');
                 return;
             }
 
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('間接服務紀錄');
+            const worksheet = workbook.addWorksheet(`${currentSemester}間接服務紀錄`);
 
             const thinBorder = {
                 top: { style: 'thin', color: { argb: 'FF000000' } },
@@ -1402,7 +1547,7 @@
             const buffer = await workbook.xlsx.writeBuffer();
             const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
             const teacherLabel = currentTeacher === "ALL" ? "全校彙整" : `${currentTeacher}老師`;
-            saveAs(blob, `115-1_${teacherLabel}_間接服務紀錄彙整表_${new Date().toISOString().split('T')[0]}.xlsx`);
+            saveAs(blob, `${currentSemester}_${teacherLabel}_間接服務紀錄彙整表_${new Date().toISOString().split('T')[0]}.xlsx`);
 
             showToast('Excel 匯出成功！', 'success');
         }
