@@ -581,49 +581,57 @@
         }
 
         window.onload = function() {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('serviceDate').value = today;
-            
-            loadSemesters();
-            loadTeachers();
-            loadStudentListMap();
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('serviceDate').value = today;
+    
+    loadSemesters();
+    loadTeachers();
+    loadStudentListMap();
 
-            const urlParams = new URLSearchParams(window.location.search);
-            const teacherParam = urlParams.get('teacher');
-            const semesterParam = urlParams.get('semester');
+    const urlParams = new URLSearchParams(window.location.search);
+    const teacherParam = urlParams.get('teacher');
+    const semesterParam = urlParams.get('semester');
 
-            const savedTeacher = localStorage.getItem('zhu_current_teacher');
-            const savedSemester = localStorage.getItem('zhu_current_semester');
+    const savedTeacher = localStorage.getItem('zhu_current_teacher');
+    const savedSemester = localStorage.getItem('zhu_current_semester');
 
-            if (semesterParam && semesters.includes(semesterParam)) {
-                currentSemester = semesterParam;
-            } else if (savedSemester && semesters.includes(savedSemester)) {
-                currentSemester = savedSemester;
-            } else if (semesters.length > 0) {
-                currentSemester = semesters[0];
-            }
+    // 計算當前日期對應的學期
+    const autoCurrentSemester = getCurrentSemesterByDate();
 
-            if (teacherParam && teachers.includes(teacherParam)) {
-                currentTeacher = teacherParam;
-            } else if (savedTeacher && teachers.includes(savedTeacher)) {
-                currentTeacher = savedTeacher;
-            } else if (teachers.length > 0) {
-                currentTeacher = teachers[0];
-            } else {
-                currentTeacher = "ALL";
-            }
+    // 如果當前計算出的學期不在清單中，自動新增進學期清單
+    if (!semesters.includes(autoCurrentSemester)) {
+        semesters.push(autoCurrentSemester);
+        saveSemesters();
+    }
 
-            const semSelect = document.getElementById('activeSemesterSelect');
-            if (semSelect) semSelect.value = currentSemester;
+    // 優先順序：網址參數 > 當前實際學期 > 歷史紀錄
+    if (semesterParam && semesters.includes(semesterParam)) {
+        currentSemester = semesterParam;
+    } else {
+        currentSemester = autoCurrentSemester; // 自動跳轉至當前學期
+    }
 
-            const select = document.getElementById('activeTeacherSelect');
-            if (select) {
-                select.value = currentTeacher;
-                switchTeacher();
-            }
+    if (teacherParam && teachers.includes(teacherParam)) {
+        currentTeacher = teacherParam;
+    } else if (savedTeacher && teachers.includes(savedTeacher)) {
+        currentTeacher = savedTeacher;
+    } else if (teachers.length > 0) {
+        currentTeacher = teachers[0];
+    } else {
+        currentTeacher = "ALL";
+    }
 
-            fetchRecordsFromGAS();
-        };
+    const semSelect = document.getElementById('activeSemesterSelect');
+    if (semSelect) semSelect.value = currentSemester;
+
+    const select = document.getElementById('activeTeacherSelect');
+    if (select) {
+        select.value = currentTeacher;
+        switchTeacher();
+    }
+
+    fetchRecordsFromGAS();
+};
 
         function loadSemesters() {
             const stored = localStorage.getItem('zhu_semester_list');
@@ -1530,6 +1538,29 @@
         function escapeHtml(str) {
             return str ? str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : '';
         }
+        // 自動根據今天日期計算學期 (例如 2026/10/14 -> 115-1)
+function getCurrentSemesterByDate() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1; // 1-12 月
+
+    let rocYear, term;
+    if (month >= 8) {
+        // 8月 ~ 12月：當前民國年 - 1911，第 1 學期
+        rocYear = year - 1911;
+        term = 1;
+    } else if (month === 1) {
+        // 1月：屬於上一年的第 1 學期
+        rocYear = year - 1 - 1911;
+        term = 1;
+    } else {
+        // 2月 ~ 7月：屬於上一年的第 2 學期
+        rocYear = year - 1 - 1911;
+        term = 2;
+    }
+
+    return `${rocYear}-${term}`;
+}
     </script>
 </body>
 </html>
