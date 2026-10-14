@@ -35,43 +35,67 @@
         .border-custom-all { border-color: #a9d6e5; }
         .bg-custom-all-light { background-color: #f2f9fc; }
         /* ==========================================
-   手機版專屬優化 (寬度 < 640px 時生效)
-   完全不影響電腦版與平板畫面
+   手機版專屬優化 (修正選單顯示問題)
    ========================================== */
 @media (max-width: 640px) {
-    /* 1. 調整頁面邊距，釋放手機螢幕空間 */
+    /* 1. 頁面邊距 */
     body {
-        padding-left: 0.75rem !important;
-        padding-right: 0.75rem !important;
-        padding-top: 1rem !important;
-        padding-bottom: 1rem !important;
+        padding: 0.75rem !important;
     }
 
-    /* 2. 頂部 Bar：改為全寬度垂直排列，選單放大更好點擊 */
+    /* 2. 頂部 Bar：修正教師與學期選單佈局 */
     #topHeaderBar {
         flex-direction: column !important;
         align-items: stretch !important;
         padding: 1rem !important;
+        gap: 0.75rem !important;
     }
+
     #topHeaderBar > div {
         width: 100% !important;
     }
-    #activeSemesterSelect, 
-    #activeTeacherSelect {
+
+    /* 讓學期與教師選單在手機版並排且均分寬度 */
+    #topHeaderBar .text-lg.font-bold {
+        display: flex !important;
         width: 100% !important;
-        margin-top: 0.25rem !important;
-    }
-    #topHeaderBar .justify-end {
-        justify-content: flex-start !important;
+        gap: 0.5rem !important;
         margin-top: 0.5rem !important;
     }
 
-    /* 3. 統計看板：改為單欄排列、間距調整 */
+    #activeSemesterSelect {
+        flex: 1 !important;
+        width: 40% !important;
+        font-size: 0.875rem !important;
+        padding: 0.5rem !important;
+    }
+
+    #activeTeacherSelect {
+        flex: 1.5 !important;
+        width: 60% !important;
+        font-size: 0.875rem !important;
+        padding: 0.5rem !important;
+    }
+
+    /* 按鈕區塊靠右或整齊排列 */
+    #topHeaderBar .justify-end {
+        display: flex !important;
+        width: 100% !important;
+        justify-content: space-between !important;
+        margin-top: 0.25rem !important;
+    }
+
+    #topHeaderBar .justify-end button {
+        flex: 1 !important;
+        justify-content: center !important;
+    }
+
+    /* 3. 統計看板：單欄 */
     .bg-white .grid-cols-1.sm\:grid-cols-2 {
         grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
     }
 
-    /* 4. 表單區域：輸入框與時間選擇器一律改為 100% 寬度 */
+    /* 4. 表單與輸入框滿寬 */
     #serviceForm {
         padding: 1.25rem 1rem !important;
     }
@@ -80,38 +104,29 @@
         width: 100% !important;
     }
 
-    /* 5. 多選核取方塊（服務對象、內容）：手機版變為 2 欄，排版更整齊 */
+    /* 5. 勾選項改為 2 欄 */
     #serviceForm .grid-cols-2.sm\:grid-cols-4,
     #serviceForm .grid-cols-1.sm\:grid-cols-2 {
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
         gap: 0.5rem !important;
     }
 
-    /* 6. 搜尋與篩選列：垂直堆疊並撐滿寬度 */
+    /* 6. 搜尋與篩選欄 */
     .bg-slate-50\/60 {
         flex-direction: column !important;
         align-items: stretch !important;
     }
     .bg-slate-50\/60 .w-full.sm\:w-80,
-    .bg-slate-50\/60 .w-full.sm\:w-auto {
-        width: 100% !important;
-    }
+    .bg-slate-50\/60 .w-full.sm\:w-auto,
     #filterStudent {
         width: 100% !important;
     }
 
-    /* 7. 表格優化：加上滑動提示或固定點擊區域 */
-    .overflow-x-auto {
-        -webkit-overflow-scrolling: touch;
-        border-radius: 0.5rem;
-    }
-
-    /* 8. Modal 彈窗：防止手機版超出邊界 */
+    /* 7. Modal 彈窗適應 */
     #semesterModal > div,
     #teacherModal > div,
     #alertModal > div {
         width: 95% !important;
-        margin: 0 auto !important;
         padding: 1.25rem !important;
     }
 }
