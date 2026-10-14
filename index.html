@@ -1359,9 +1359,8 @@
     }
 
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet(`${currentSemester}間接服務紀錄`);
+    const worksheet = workbook.addWorksheet('間接服務紀錄');
 
-    // 1. 定義共用樣式 (細黑邊框、字型與標題灰底)
     const thinBorder = {
         top: { style: 'thin', color: { argb: 'FF000000' } },
         left: { style: 'thin', color: { argb: 'FF000000' } },
@@ -1372,7 +1371,6 @@
     const fontName = '微軟正黑體';
     const headerFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9D9D9' } };
 
-    // 2. 設定欄位標題與寬度
     worksheet.columns = [
         { header: '服務學生姓名', key: 'name', width: 16 },
         { header: '服務日期', key: 'date', width: 14 },
@@ -1384,7 +1382,6 @@
         { header: '備註（可包含事由、服務重點、建議）', key: 'notes', width: 45 }
     ];
 
-    // 設定表頭樣式
     const headerRow = worksheet.getRow(1);
     headerRow.height = 26;
     headerRow.eachCell((cell) => {
@@ -1394,7 +1391,6 @@
         cell.border = thinBorder;
     });
 
-    // 3. 填入歷史紀錄資料
     filteredData.forEach(r => {
         const row = worksheet.addRow({
             name: r.studentName || '',
@@ -1411,10 +1407,13 @@
         row.eachCell((cell, colNumber) => {
             cell.font = { name: fontName, size: 10 };
             cell.border = thinBorder;
-            // 前 5 欄居中對齊，後續欄位靠左對齊
-            cell.alignment = [1, 2, 3, 4, 5].includes(colNumber) 
-                ? { horizontal: 'center', vertical: 'middle' } 
-                : { horizontal: 'left', vertical: 'middle' };
+            cell.alignment = { vertical: 'middle' };
+
+            if ([1, 2, 3, 4, 5].includes(colNumber)) {
+                cell.alignment = { horizontal: 'center', vertical: 'middle' };
+            } else {
+                cell.alignment = { horizontal: 'left', vertical: 'middle' };
+            }
         });
     });
 
@@ -1422,7 +1421,6 @@
     const startDataRow = 2;
     const endDataRow = startDataRow + dataRowsCount - 1;
 
-    // 4. 空出兩行以繪製統計合計區塊
     worksheet.addRow([]);
     worksheet.addRow([]);
 
@@ -1432,7 +1430,6 @@
     const sessRowIdx = sumRowIdx + 1;
     const weekRowIdx = sumRowIdx + 2;
 
-    // (A) 合計標題塊（合併 A:B 欄）
     worksheet.mergeCells(`A${sumRowIdx}:B${weekRowIdx}`);
     const totalCell = worksheet.getCell(`A${sumRowIdx}`);
     totalCell.value = '合計';
@@ -1440,45 +1437,45 @@
     totalCell.fill = headerFill;
     totalCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
-    // (B) 總服務時間(分鐘) 與 SUM 公式
     worksheet.mergeCells(`C${sumRowIdx}:D${sumRowIdx}`);
-    worksheet.getCell(`C${sumRowIdx}`).value = '總服務時間(分鐘)';
-    worksheet.getCell(`C${sumRowIdx}`).font = { name: fontName, size: 10, bold: true };
-    worksheet.getCell(`C${sumRowIdx}`).alignment = { horizontal: 'center', vertical: 'middle' };
-    
+    const label1Cell = worksheet.getCell(`C${sumRowIdx}`);
+    label1Cell.value = '總服務時間(分鐘)';
+    label1Cell.font = { name: fontName, size: 10, bold: true };
+    label1Cell.alignment = { horizontal: 'center', vertical: 'middle' };
+
     const durationValCell = worksheet.getCell(`E${sumRowIdx}`);
     durationValCell.value = { formula: `SUM(E${startDataRow}:E${endDataRow})` };
     durationValCell.font = { name: fontName, size: 10, bold: true };
     durationValCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
-    // (C) 總服務節數 與 計算公式 (/50)
     worksheet.mergeCells(`C${sessRowIdx}:D${sessRowIdx}`);
-    worksheet.getCell(`C${sessRowIdx}`).value = '總服務節數';
-    worksheet.getCell(`C${sessRowIdx}`).font = { name: fontName, size: 10, bold: true };
-    worksheet.getCell(`C${sessRowIdx}`).alignment = { horizontal: 'center', vertical: 'middle' };
-    
+    const label2Cell = worksheet.getCell(`C${sessRowIdx}`);
+    label2Cell.value = '總服務節數';
+    label2Cell.font = { name: fontName, size: 10, bold: true };
+    label2Cell.alignment = { horizontal: 'center', vertical: 'middle' };
+
     const sessValCell = worksheet.getCell(`E${sessRowIdx}`);
     sessValCell.value = { formula: `E${sumRowIdx}/50` };
     sessValCell.font = { name: fontName, size: 10, bold: true };
     sessValCell.numFmt = '0.0"節"';
     sessValCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
-    // (D) 平均每週節數 與 計算公式 (/週數)
     worksheet.mergeCells(`C${weekRowIdx}:D${weekRowIdx}`);
-    worksheet.getCell(`C${weekRowIdx}`).value = '平均每週節數';
-    worksheet.getCell(`C${weekRowIdx}`).font = { name: fontName, size: 10, bold: true };
-    worksheet.getCell(`C${weekRowIdx}`).alignment = { horizontal: 'center', vertical: 'middle' };
-    
+    const label3Cell = worksheet.getCell(`C${weekRowIdx}`);
+    label3Cell.value = '平均每週節數';
+    label3Cell.font = { name: fontName, size: 10, bold: true };
+    label3Cell.alignment = { horizontal: 'center', vertical: 'middle' };
+
     const weekValCell = worksheet.getCell(`E${weekRowIdx}`);
     weekValCell.value = { formula: `E${sessRowIdx}/${weeks}` };
     weekValCell.font = { name: fontName, size: 10, bold: true };
     weekValCell.numFmt = '0"節"';
     weekValCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
-    // 設定統計區行高
-    [sumRowIdx, sessRowIdx, weekRowIdx].forEach(idx => { worksheet.getRow(idx).height = 24; });
+    [sumRowIdx, sessRowIdx, weekRowIdx].forEach(idx => {
+        worksheet.getRow(idx).height = 24;
+    });
 
-    // (E) 備註區塊（合併 F 欄與 G:H 欄）
     worksheet.mergeCells(`F${sumRowIdx}:F${weekRowIdx}`);
     const notesLabelCell = worksheet.getCell(`F${sumRowIdx}`);
     notesLabelCell.value = '備註';
@@ -1488,14 +1485,13 @@
 
     worksheet.mergeCells(`G${sumRowIdx}:H${weekRowIdx}`);
 
-    // 為統計區塊的所有單元格補上細邊框
     for (let r = sumRowIdx; r <= weekRowIdx; r++) {
         for (let c = 1; c <= 8; c++) {
-            worksheet.getCell(r, c).border = thinBorder;
+            const cell = worksheet.getCell(r, c);
+            cell.border = thinBorder;
         }
     }
 
-    // 5. 簽核欄位（填表人、處室主管、教務處、校長）
     worksheet.addRow([]);
     const signRowIdx = weekRowIdx + 2;
     const signRow = worksheet.getRow(signRowIdx);
@@ -1512,7 +1508,6 @@
         cell.alignment = { horizontal: 'left', vertical: 'middle' };
     });
 
-    // 6. 匯出 Excel 檔案
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     const teacherLabel = currentTeacher === "ALL" ? "全校彙整" : `${currentTeacher}老師`;
