@@ -35,7 +35,7 @@
         .border-custom-all { border-color: #a9d6e5; }
         .bg-custom-all-light { background-color: #f2f9fc; }
 
-        /* 手機響應式專用優化（僅影響 640px 以下的手機螢幕，電腦版完全不受影響） */
+        /* 手機響應式專用優化（僅影響 640px 以下手機螢幕，電腦版完全不受影響） */
         @media (max-width: 639px) {
             body {
                 padding-top: 1rem !important;
@@ -43,7 +43,6 @@
                 padding-left: 0.75rem !important;
                 padding-right: 0.75rem !important;
             }
-            /* 頂部身份切換列調整 */
             #topHeaderBar {
                 flex-direction: column !important;
                 align-items: stretch !important;
@@ -55,14 +54,6 @@
             #topHeaderBar button {
                 flex: 1 !important;
                 justify-content: center !important;
-            }
-            /* 表單下拉切換與時間區塊適應 */
-            .flex-col-mobile {
-                flex-direction: column !important;
-            }
-            /* 卡片 Padding 微調 */
-            .mobile-card-p {
-                padding: 1rem !important;
             }
         }
     </style>
@@ -84,7 +75,7 @@
                                 class="bg-black/20 border border-white/30 text-white font-bold rounded-xl px-3 py-1.5 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer max-w-[130px] sm:max-w-none truncate">
                         </select>
                         <select id="activeTeacherSelect" onchange="switchTeacher()" 
-                                class="bg-black/20 border border-white/30 text-white font-bold rounded-xl px-3 py-1.5 sm:px-3.5 sm:py-1.5 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer max-w-[160px] sm:max-w-none truncate">
+                                class="bg-black/20 border border-white/30 text-white font-bold rounded-xl px-3.5 py-1.5 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer max-w-[160px] sm:max-w-none truncate">
                         </select>
                     </div>
                 </div>
@@ -546,7 +537,7 @@
     </div>
 
     <script>
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzG2OUb2zcB0sBoDHTBeuaf6NGOzHkCZusjBPynO72EB1CU7etE-2glTj0MOavUeVWWXQ/exec";
+        const GAS_API_URL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";
 
         const defaultSemesters = ["114-1", "114-2", "115-1"];
         let semesters = [];
@@ -615,31 +606,26 @@
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('serviceDate').value = today;
             
-            loadSemesters();
-            loadTeachers();
-            loadStudentListMap();
+            loadSemestersLocal();
+            loadTeachersLocal();
+            loadStudentListMapLocal();
 
             const urlParams = new URLSearchParams(window.location.search);
             const teacherParam = urlParams.get('teacher');
             const semesterParam = urlParams.get('semester');
 
             const savedTeacher = localStorage.getItem('zhu_current_teacher');
-            const savedSemester = localStorage.getItem('zhu_current_semester');
 
-            // 計算當前日期對應的學期
             const autoCurrentSemester = getCurrentSemesterByDate();
-
-            // 如果當前計算出的學期不在清單中，自動新增進學期清單
             if (!semesters.includes(autoCurrentSemester)) {
                 semesters.push(autoCurrentSemester);
                 saveSemesters();
             }
 
-            // 優先順序：網址參數 > 當前實際學期 > 歷史紀錄
             if (semesterParam && semesters.includes(semesterParam)) {
                 currentSemester = semesterParam;
             } else {
-                currentSemester = autoCurrentSemester; // 自動跳轉至當前學期
+                currentSemester = autoCurrentSemester;
             }
 
             if (teacherParam && teachers.includes(teacherParam)) {
@@ -652,27 +638,138 @@
                 currentTeacher = "ALL";
             }
 
-            const semSelect = document.getElementById('activeSemesterSelect');
-            if (semSelect) semSelect.value = currentSemester;
-
-            const select = document.getElementById('activeTeacherSelect');
-            if (select) {
-                select.value = currentTeacher;
-                switchTeacher();
-            }
-
             fetchRecordsFromGAS();
         };
 
-        function loadSemesters() {
-            const stored = localStorage.getItem('zhu_semester_list');
-            semesters = stored ? JSON.parse(stored) : [...defaultSemesters];
-            renderSemesterSelect();
+        // GAS 雙向同步核心函式
+        async function fetchRecordsFromGAS() {
+            if (!GAS_API_URL || GAS_API_URL.includes("YOUR_SCRIPT_ID")) {
+                loadRecordsLocal();
+                return;
+            }
+            try {
+                const res = await fetch(GAS_API_URL);
+                const data = await res.json();
+                
+                if (data.records) {
+                    records = data.records.map(r => ({ ...r, semester: r.semester || "114-1" }));
+                    saveRecordsLocal();
+
+                    if (data.semesters && data.semesters.length > 0) {
+                        semesters = data.semesters;
+                        saveSemestersLocal();
+                    }
+                    if (data.teachers && data.teachers.length > 0) {
+                        teachers = data.teachers;
+                        saveTeachersLocal();
+                    }
+                    if (data.teacherStudentMap && Object.keys(data.teacherStudentMap).length > 0) {
+                        teacherStudentMap = data.teacherStudentMap;
+                        saveStudentMapLocal();
+                    }
+                } else if (Array.isArray(data)) {
+                    records = data.map(r => ({ ...r, semester: r.semester || "114-1" }));
+                    saveRecordsLocal();
+                }
+
+                renderSemesterSelect();
+                renderTeacherSelect();
+                render();
+            } catch (e) {
+                console.error("GAS 載入失敗，改讀 LocalStorage", e);
+                loadRecordsLocal();
+            }
         }
 
-        function saveSemesters() {
+        async function syncConfigToGAS() {
+            if (!GAS_API_URL || GAS_API_URL.includes("YOUR_SCRIPT_ID")) return;
+            try {
+                await fetch(GAS_API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: "syncConfig",
+                        semesters: semesters,
+                        teachers: teachers,
+                        teacherStudentMap: teacherStudentMap
+                    })
+                });
+            } catch (e) {
+                console.error("GAS 設定同步失敗", e);
+            }
+        }
+
+        async function syncRecordToGAS(recordData) {
+            if (!GAS_API_URL || GAS_API_URL.includes("YOUR_SCRIPT_ID")) return;
+            try {
+                await fetch(GAS_API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(recordData)
+                });
+            } catch (e) {
+                console.error("GAS 紀錄同步失敗", e);
+            }
+        }
+
+        // 本地快取讀寫管理
+        function loadSemestersLocal() {
+            const stored = localStorage.getItem('zhu_semester_list');
+            semesters = stored ? JSON.parse(stored) : [...defaultSemesters];
+        }
+        function saveSemestersLocal() {
             localStorage.setItem('zhu_semester_list', JSON.stringify(semesters));
+        }
+        function saveSemesters() {
+            saveSemestersLocal();
             renderSemesterSelect();
+            syncConfigToGAS();
+        }
+
+        function loadTeachersLocal() {
+            const stored = localStorage.getItem('zhu_teacher_list');
+            teachers = stored ? JSON.parse(stored) : [...defaultTeachers];
+        }
+        function saveTeachersLocal() {
+            localStorage.setItem('zhu_teacher_list', JSON.stringify(teachers));
+        }
+        function saveTeachers() {
+            saveTeachersLocal();
+            renderTeacherSelect();
+            syncConfigToGAS();
+        }
+
+        function loadStudentListMapLocal() {
+            const storedMap = localStorage.getItem('zhu_teacher_student_map');
+            if (storedMap) {
+                teacherStudentMap = JSON.parse(storedMap);
+            } else {
+                teacherStudentMap = {};
+                teachers.forEach(t => { teacherStudentMap[t] = []; });
+            }
+        }
+        function saveStudentMapLocal() {
+            localStorage.setItem('zhu_teacher_student_map', JSON.stringify(teacherStudentMap));
+        }
+        function saveStudentListMap() {
+            saveStudentMapLocal();
+            renderStudentPills();
+            updateFilterStudentDropdown();
+            syncConfigToGAS();
+        }
+
+        function loadRecordsLocal() {
+            const stored = localStorage.getItem('zhu_teacher_service_records');
+            records = stored ? JSON.parse(stored) : [];
+            records = records.map(r => ({ ...r, semester: r.semester || "114-1" }));
+            renderSemesterSelect();
+            renderTeacherSelect();
+            render();
+        }
+        function saveRecordsLocal() {
+            localStorage.setItem('zhu_teacher_service_records', JSON.stringify(records));
         }
 
         function renderSemesterSelect() {
@@ -743,17 +840,6 @@
                 saveSemesters();
                 openSemesterManageModal();
             }
-        }
-
-        function loadTeachers() {
-            const stored = localStorage.getItem('zhu_teacher_list');
-            teachers = stored ? JSON.parse(stored) : [...defaultTeachers];
-            renderTeacherSelect();
-        }
-
-        function saveTeachers() {
-            localStorage.setItem('zhu_teacher_list', JSON.stringify(teachers));
-            renderTeacherSelect();
         }
 
         function renderTeacherSelect() {
@@ -916,47 +1002,6 @@
             }
         }
 
-        async function fetchRecordsFromGAS() {
-            if (!GAS_API_URL || GAS_API_URL.includes("YOUR_SCRIPT_ID")) {
-                loadRecordsLocal();
-                return;
-            }
-            try {
-                const res = await fetch(GAS_API_URL);
-                const data = await res.json();
-                records = data.map(r => ({ ...r, semester: r.semester || "114-1" }));
-                render();
-            } catch (e) {
-                console.error("GAS 載入失敗，改讀 LocalStorage", e);
-                loadRecordsLocal();
-            }
-        }
-
-        function loadRecordsLocal() {
-            const stored = localStorage.getItem('zhu_teacher_service_records');
-            records = stored ? JSON.parse(stored) : [];
-            records = records.map(r => ({ ...r, semester: r.semester || "114-1" }));
-            render();
-        }
-
-        function saveRecords() {
-            localStorage.setItem('zhu_teacher_service_records', JSON.stringify(records));
-        }
-
-        async function syncRecordToGAS(recordData) {
-            if (!GAS_API_URL || GAS_API_URL.includes("YOUR_SCRIPT_ID")) return;
-            try {
-                await fetch(GAS_API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(recordData)
-                });
-            } catch (e) {
-                console.error("GAS 同步失敗", e);
-            }
-        }
-
         function showAlertModal(missingItems, targetFocusEl = null) {
             const modal = document.getElementById('alertModal');
             const messagesContainer = document.getElementById('alertModalMessages');
@@ -980,24 +1025,6 @@
             const val = parseFloat(document.getElementById('goalHoursInput').value) || 40;
             localStorage.setItem('zhu_teacher_goal_hours', val);
             renderAnalytics();
-        }
-
-        function loadStudentListMap() {
-            const storedMap = localStorage.getItem('zhu_teacher_student_map');
-            if (storedMap) {
-                teacherStudentMap = JSON.parse(storedMap);
-            } else {
-                const oldList = localStorage.getItem('zhu_teacher_student_list');
-                const defaultList = oldList ? JSON.parse(oldList) : [];
-                teacherStudentMap = {};
-                teachers.forEach(t => { teacherStudentMap[t] = [...defaultList]; });
-            }
-        }
-
-        function saveStudentListMap() {
-            localStorage.setItem('zhu_teacher_student_map', JSON.stringify(teacherStudentMap));
-            renderStudentPills();
-            updateFilterStudentDropdown();
         }
 
         function getCurrentTeacherStudents() {
@@ -1175,7 +1202,7 @@
             };
 
             records.unshift(record);
-            saveRecords();
+            saveRecordsLocal();
             syncRecordToGAS(record);
 
             render();
@@ -1193,7 +1220,7 @@
         async function deleteRecord(id) {
             if (confirm('確定要刪除這筆服務紀錄嗎？')) {
                 records = records.filter(r => r.id !== id);
-                saveRecords();
+                saveRecordsLocal();
                 syncRecordToGAS({ action: "delete", id: id });
                 render();
                 showToast('紀錄已成功刪除', 'info');
@@ -1573,7 +1600,7 @@
         function getCurrentSemesterByDate() {
             const now = new Date();
             const year = now.getFullYear();
-            const month = now.getMonth() + 1; // 1-12 月
+            const month = now.getMonth() + 1;
 
             let rocYear, term;
             if (month >= 8) {
