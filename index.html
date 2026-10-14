@@ -644,26 +644,35 @@
         }
 
         function switchTeacher() {
-            const val = document.getElementById('activeTeacherSelect').value;
-            currentTeacher = val;
+    const val = document.getElementById('activeTeacherSelect').value;
+    currentTeacher = val;
 
-            // 記憶當前教師
-            localStorage.setItem('zhu_current_teacher', val);
+    // 記憶當前教師
+    localStorage.setItem('zhu_current_teacher', val);
 
-            if (val === "ALL") {
-                document.getElementById('headerTeacherName').innerText = "全校彙整";
-                document.getElementById('formTeacherBadge').innerText = "全校總覽";
-                document.getElementById('tableTeacherTitle').innerText = "全體教師紀錄";
-            } else {
-                document.getElementById('headerTeacherName').innerText = val;
-                document.getElementById('formTeacherBadge').innerText = `${val}老師`;
-                document.getElementById('tableTeacherTitle').innerText = `${val}老師`;
-            }
+    // 【新增修正】切換教師時，清空學生輸入框與隱藏下拉選單
+    const studentInput = document.getElementById('studentName');
+    const studentDropdown = document.getElementById('studentDropdown');
+    if (studentInput) studentInput.value = '';
+    if (studentDropdown) {
+        studentDropdown.innerHTML = '';
+        studentDropdown.classList.add('hidden');
+    }
 
-            applyDynamicTheme();
-            updateFilterStudentDropdown();
-            render();
-        }
+    if (val === "ALL") {
+        document.getElementById('headerTeacherName').innerText = "全校彙整";
+        document.getElementById('formTeacherBadge').innerText = "全校總覽";
+        document.getElementById('tableTeacherTitle').innerText = "全體教師紀錄";
+    } else {
+        document.getElementById('headerTeacherName').innerText = val;
+        document.getElementById('formTeacherBadge').innerText = `${val}老師`;
+        document.getElementById('tableTeacherTitle').innerText = `${val}老師`;
+    }
+
+    applyDynamicTheme();
+    updateFilterStudentDropdown();
+    render();
+}
 
         function applyDynamicTheme() {
             const theme = getCurrentTheme();
