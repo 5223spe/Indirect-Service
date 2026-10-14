@@ -20,7 +20,6 @@
             font-family: 'Noto Sans TC', sans-serif;
             background-color: #f8fafc;
         }
-        /* 自訂指定純色類別 */
         .bg-custom-t1 { background-color: #0c4a6e; }
         .text-custom-t1 { color: #0c4a6e; }
 
@@ -158,7 +157,6 @@
             </div>
 
             <div class="space-y-6">
-                <!-- 服務學生姓名 -->
                 <div class="relative">
                     <label class="block text-sm font-medium text-slate-700 mb-1">
                         服務學生姓名 <span class="text-red-500">*</span>
@@ -179,7 +177,6 @@
                     </div>
                 </div>
 
-                <!-- 服務日期 -->
                 <div class="w-full sm:w-1/2">
                     <label class="block text-sm font-medium text-slate-700 mb-1">
                         服務日期 <span class="text-red-500">*</span>
@@ -188,7 +185,6 @@
                            class="w-full px-3 py-2 border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition">
                 </div>
 
-                <!-- 時間與小時 -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">
@@ -217,7 +213,6 @@
 
             <hr class="border-slate-100">
 
-            <!-- 服務對象 -->
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-3">
                     服務對象 <span class="text-red-500">*</span>
@@ -258,7 +253,6 @@
                 </div>
             </div>
 
-            <!-- 間接服務內容 -->
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-3">
                     間接服務內容 <span class="text-red-500">*</span>
@@ -295,7 +289,6 @@
                 </div>
             </div>
 
-            <!-- 備註 -->
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1">備註</label>
                 <textarea id="notes" rows="3" placeholder="請輸入備註內容..." 
@@ -357,7 +350,6 @@
                 </div>
             </div>
 
-            <!-- Table Container (更新欄位：移除填表教師、新增晤談時間) -->
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse min-w-[700px]">
                     <thead>
@@ -1188,7 +1180,6 @@
             renderAnalytics();
         }
 
-        /* 渲染表格：已移除「填表教師」，新增獨立的「晤談時間」欄位 */
         function renderTable() {
             const theme = getCurrentTheme();
             const tableBody = document.getElementById('recordsTableBody');
@@ -1233,11 +1224,9 @@
                         <td class="p-3 whitespace-nowrap font-medium text-slate-700 text-xs align-top">
                             ${r.serviceDate}
                         </td>
-                        <!-- 新增：晤談時間欄位 -->
                         <td class="p-3 whitespace-nowrap font-medium text-slate-600 text-xs align-top">
                             ${r.startTime && r.endTime ? `${r.startTime} -${r.endTime}` : '-'}
                         </td>
-                        <!-- 調整：時間與時數（純顯示分鐘數） -->
                         <td class="p-3 whitespace-nowrap align-top">
                             <div class="inline-block ${theme.bgLightClass} ${theme.textDarkClass} font-bold text-xs px-2.5 py-1 rounded-md border border-slate-200">
                                 ${r.durationMinutes} 分鐘
@@ -1359,10 +1348,10 @@
 
         function formatDateSimple(dateStr) {
             if (!dateStr) return '';
-            const parts = dateStr.split('-');
-            return parts.length === 3 ? `${parts[0]}/${parseInt(parts[1], 10)}/${parseInt(parts[2], 10)}` : dateStr;
+            return dateStr.replace(/-/g, '/');
         }
 
+        /* 完全精準還原圖片 Excel 格式之匯出函數 */
         async function exportToExcel() {
             const filteredData = getFilteredRecords();
             if (filteredData.length === 0) {
@@ -1381,19 +1370,21 @@
             };
 
             const fontName = '微軟正黑體';
-            const headerFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9D9D9' } };
+            const headerFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0E0E0' } };
 
+            // 設定欄位與圖片完全相同 (A-H欄)
             worksheet.columns = [
-                { header: '服務學生姓名', key: 'name', width: 16 },
+                { header: '服務學生姓名', key: 'name', width: 18 },
                 { header: '服務日期', key: 'date', width: 14 },
                 { header: '服務開始時間', key: 'startTime', width: 18 },
                 { header: '服務結束時間', key: 'endTime', width: 18 },
                 { header: '總服務時間(分鐘)', key: 'duration', width: 20 },
-                { header: '服務對象', key: 'targets', width: 32 },
-                { header: '間接服務內容', key: 'contents', width: 32 },
+                { header: '服務對象', key: 'targets', width: 28 },
+                { header: '間接服務內容', key: 'contents', width: 28 },
                 { header: '備註（可包含事由、服務重點、建議）', key: 'notes', width: 45 }
             ];
 
+            // 標頭樣式
             const headerRow = worksheet.getRow(1);
             headerRow.height = 26;
             headerRow.eachCell((cell) => {
@@ -1403,6 +1394,7 @@
                 cell.border = thinBorder;
             });
 
+            // 填入紀錄資料
             filteredData.forEach(r => {
                 const row = worksheet.addRow({
                     name: r.studentName || '',
@@ -1427,53 +1419,61 @@
             const startDataRow = 2;
             const endDataRow = startDataRow + dataRowsCount - 1;
 
+            // 空白區隔行 (如圖中第 5, 6 列)
             worksheet.addRow([]);
             worksheet.addRow([]);
 
             const weeks = parseFloat(document.getElementById('semesterWeeks').value) || 20;
 
-            const sumRowIdx = endDataRow + 3;
-            const sessRowIdx = sumRowIdx + 1;
-            const weekRowIdx = sumRowIdx + 2;
+            const sumRowIdx = endDataRow + 3;  // 合計區塊開始列（如同圖中第7列）
+            const sessRowIdx = sumRowIdx + 1;  // 第8列
+            const weekRowIdx = sumRowIdx + 2;  // 第9列
 
+            // 1. 左側「合計」大方格 (跨 A、B 欄，第 7~9 列)
             worksheet.mergeCells(`A${sumRowIdx}:B${weekRowIdx}`);
             const totalCell = worksheet.getCell(`A${sumRowIdx}`);
-            totalCell.value = '合計';
+            totalCell.value = '合 計';
             totalCell.font = { name: fontName, size: 11, bold: true };
             totalCell.fill = headerFill;
             totalCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
+            // 2. 統計項目標籤與計算公式
+            // 總服務時間(分鐘) (跨 C、D 欄)
             worksheet.mergeCells(`C${sumRowIdx}:D${sumRowIdx}`);
             worksheet.getCell(`C${sumRowIdx}`).value = '總服務時間(分鐘)';
             worksheet.getCell(`C${sumRowIdx}`).font = { name: fontName, size: 10, bold: true };
             worksheet.getCell(`C${sumRowIdx}`).alignment = { horizontal: 'center', vertical: 'middle' };
+            
             const durationValCell = worksheet.getCell(`E${sumRowIdx}`);
             durationValCell.value = { formula: `SUM(E${startDataRow}:E${endDataRow})` };
-            durationValCell.font = { name: fontName, size: 10, bold: true };
+            durationValCell.font = { name: fontName, size: 10 };
             durationValCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
+            // 總服務節數 (跨 C、D 欄)
             worksheet.mergeCells(`C${sessRowIdx}:D${sessRowIdx}`);
             worksheet.getCell(`C${sessRowIdx}`).value = '總服務節數';
             worksheet.getCell(`C${sessRowIdx}`).font = { name: fontName, size: 10, bold: true };
             worksheet.getCell(`C${sessRowIdx}`).alignment = { horizontal: 'center', vertical: 'middle' };
+            
             const sessValCell = worksheet.getCell(`E${sessRowIdx}`);
             sessValCell.value = { formula: `E${sumRowIdx}/50` };
-            sessValCell.font = { name: fontName, size: 10, bold: true };
-            sessValCell.numFmt = '0.0"節"';
+            sessValCell.font = { name: fontName, size: 10 };
+            sessValCell.numFmt = '0.0';
             sessValCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
+            // 平均每週節數 (跨 C、D 欄)
             worksheet.mergeCells(`C${weekRowIdx}:D${weekRowIdx}`);
             worksheet.getCell(`C${weekRowIdx}`).value = '平均每週節數';
             worksheet.getCell(`C${weekRowIdx}`).font = { name: fontName, size: 10, bold: true };
             worksheet.getCell(`C${weekRowIdx}`).alignment = { horizontal: 'center', vertical: 'middle' };
+            
             const weekValCell = worksheet.getCell(`E${weekRowIdx}`);
             weekValCell.value = { formula: `E${sessRowIdx}/${weeks}` };
-            weekValCell.font = { name: fontName, size: 10, bold: true };
-            weekValCell.numFmt = '0"節"';
+            weekValCell.font = { name: fontName, size: 10 };
+            weekValCell.numFmt = '0.0';
             weekValCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
-            [sumRowIdx, sessRowIdx, weekRowIdx].forEach(idx => { worksheet.getRow(idx).height = 24; });
-
+            // 3. 中間「備註」方格 (跨 F 欄，第 7~9 列)
             worksheet.mergeCells(`F${sumRowIdx}:F${weekRowIdx}`);
             const notesLabelCell = worksheet.getCell(`F${sumRowIdx}`);
             notesLabelCell.value = '備註';
@@ -1481,15 +1481,18 @@
             notesLabelCell.fill = headerFill;
             notesLabelCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
+            // 4. 右側「備註空白填寫區」 (跨 G、H 欄，第 7~9 列)
             worksheet.mergeCells(`G${sumRowIdx}:H${weekRowIdx}`);
 
-            for (let r = sumRowIdx; r <= weekRowIdx; r++) {
+            // 補齊統計表格的外框線
+            [sumRowIdx, sessRowIdx, weekRowIdx].forEach(idx => { 
+                worksheet.getRow(idx).height = 24;
                 for (let c = 1; c <= 8; c++) {
-                    worksheet.getCell(r, c).border = thinBorder;
+                    worksheet.getCell(r = idx, c).border = thinBorder;
                 }
-            }
+            });
 
-            worksheet.addRow([]);
+            // 5. 底部簽核列（如同圖中第11列，中間空一列）
             const signRowIdx = weekRowIdx + 2;
             const signRow = worksheet.getRow(signRowIdx);
             signRow.height = 28;
@@ -1505,6 +1508,7 @@
                 cell.alignment = { horizontal: 'left', vertical: 'middle' };
             });
 
+            // 寫出並下載檔案
             const buffer = await workbook.xlsx.writeBuffer();
             const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
             const teacherLabel = currentTeacher === "ALL" ? "全校彙整" : `${currentTeacher}老師`;
