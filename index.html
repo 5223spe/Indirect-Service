@@ -35,7 +35,7 @@
         .border-custom-all { border-color: #a9d6e5; }
         .bg-custom-all-light { background-color: #f2f9fc; }
 
-        /* 手機響應式專用優化（僅影響 640px 以下手機螢幕，電腦版完全不受影響） */
+        /* 手機響應式專用優化（僅影響 639px 以下螢幕，電腦版完全不受影響） */
         @media (max-width: 639px) {
             body {
                 padding-top: 1rem !important;
@@ -58,9 +58,9 @@
         }
     </style>
 </head>
-<body class="py-8 px-4 sm:px-6 lg:px-8 text-slate-800">
+<body class="py-8 px-4 sm:px-8 text-slate-800">
 
-    <div class="max-w-5xl mx-auto space-y-6">
+    <div class="max-w-5xl w-full mx-auto space-y-6">
 
         <!-- 0. 頂部身份切換與學期/教師管理列 -->
         <div id="topHeaderBar" class="bg-[#0c4a6e] text-white rounded-2xl p-4 sm:p-5 shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-all duration-300">
@@ -537,7 +537,7 @@
     </div>
 
     <script>
-        const GAS_API_URL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzG2OUb2zcB0sBoDHTBeuaf6NGOzHkCZusjBPynO72EB1CU7etE-2glTj0MOavUeVWWXQ/exec";
 
         const defaultSemesters = ["114-1", "114-2", "115-1"];
         let semesters = [];
@@ -639,6 +639,9 @@
             }
 
             fetchRecordsFromGAS();
+
+            // 每 15 秒自動輪詢（同步其他人的新增或刪除資料）
+            setInterval(fetchRecordsFromGAS, 15000);
         };
 
         // GAS 雙向同步核心函式
@@ -914,7 +917,7 @@
             } else {
                 topHeader.className = "rounded-2xl p-4 sm:p-5 shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-all duration-300 text-white border-0";
                 selectSem.className = "bg-black/20 border border-white/30 text-white font-bold rounded-xl px-3 py-1.5 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer max-w-[130px] sm:max-w-none truncate";
-                selectEl.className = "bg-black/20 border border-white/30 text-white font-bold rounded-xl px-3 py-1.5 sm:px-3.5 sm:py-1.5 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer max-w-[160px] sm:max-w-none truncate";
+                selectEl.className = "bg-black/20 border border-white/30 text-white font-bold rounded-xl px-3.5 py-1.5 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer max-w-[160px] sm:max-w-none truncate";
                 subLabel.className = "text-[11px] text-white/80 font-medium";
                 iconBox.className = "w-11 h-11 bg-white/10 rounded-xl flex items-center justify-center text-white border border-white/20 shrink-0";
                 manageBtn.className = "px-3.5 py-2 text-xs bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition duration-150 cursor-pointer border border-white/20 flex items-center justify-center gap-2 shadow-sm flex-1 sm:flex-none";
