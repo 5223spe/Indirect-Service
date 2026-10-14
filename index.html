@@ -581,13 +581,39 @@
         }
 
         window.onload = function() {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('serviceDate').value = today;
-            
-            loadTeachers();
-            loadStudentList();
-            fetchRecordsFromGAS();
-        };
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('serviceDate').value = today;
+    
+    loadTeachers();
+    loadStudentList();
+
+    // 1. 讀取網址 URL 參數 (例如 ?teacher=陳老師)
+    const urlParams = new URLSearchParams(window.location.search);
+    const teacherParam = urlParams.get('teacher');
+
+    // 2. 讀取瀏覽器上一次紀錄
+    const savedTeacher = localStorage.getItem('zhu_current_teacher');
+
+    // 優先順序：網址參數 > 上次紀錄 > 預設第一位教師
+    if (teacherParam && teachers.includes(teacherParam)) {
+        currentTeacher = teacherParam;
+    } else if (savedTeacher && teachers.includes(savedTeacher)) {
+        currentTeacher = savedTeacher;
+    } else if (teachers.length > 0) {
+        currentTeacher = teachers[0];
+    } else {
+        currentTeacher = "ALL";
+    }
+
+    // 同步更新選單介面
+    const select = document.getElementById('activeTeacherSelect');
+    if (select) {
+        select.value = currentTeacher;
+        switchTeacher();
+    }
+
+    fetchRecordsFromGAS();
+};
 
         function loadTeachers() {
             const stored = localStorage.getItem('zhu_teacher_list');
@@ -621,22 +647,25 @@
         }
 
         function switchTeacher() {
-            const val = document.getElementById('activeTeacherSelect').value;
-            currentTeacher = val;
+    const val = document.getElementById('activeTeacherSelect').value;
+    currentTeacher = val;
 
-            if (val === "ALL") {
-                document.getElementById('headerTeacherName').innerText = "全校彙整";
-                document.getElementById('formTeacherBadge').innerText = "全校總覽";
-                document.getElementById('tableTeacherTitle').innerText = "全體教師紀錄";
-            } else {
-                document.getElementById('headerTeacherName').innerText = val;
-                document.getElementById('formTeacherBadge').innerText = `${val}老師`;
-                document.getElementById('tableTeacherTitle').innerText = `${val}老師`;
-            }
+    // 記住使用者目前切換的教師名稱
+    localStorage.setItem('zhu_current_teacher', val);
 
-            applyDynamicTheme();
-            render();
-        }
+    if (val === "ALL") {
+        document.getElementById('headerTeacherName').innerText = "全校彙整";
+        document.getElementById('formTeacherBadge').innerText = "全校總覽";
+        document.getElementById('tableTeacherTitle').innerText = "全體教師紀錄";
+    } else {
+        document.getElementById('headerTeacherName').innerText = val;
+        document.getElementById('formTeacherBadge').innerText = `${val}老師`;
+        document.getElementById('tableTeacherTitle').innerText = `${val}老師`;
+    }
+
+    applyDynamicTheme();
+    render();
+}
 
         function applyDynamicTheme() {
             const theme = getCurrentTheme();
