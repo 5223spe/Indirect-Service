@@ -1260,13 +1260,15 @@
                                 ${escapeHtml(r.semester || '114-1')}
                             </span>
                         </td>
+                        <!-- 填表教師：改為一般純文字粗體 -->
+                        <td class="p-3 whitespace-nowrap font-bold text-slate-800 text-sm align-top">
+                            ${escapeHtml(r.teacherName || '未指定')}
+                        </td>
+                        <!-- 學生：改為彩色圓角膠囊樣式 -->
                         <td class="p-3 whitespace-nowrap font-bold text-xs align-top">
                             <span class="px-2.5 py-0.5 rounded-full border ${badgeClass}">
-                                ${escapeHtml(r.teacherName || '未指定')}
+                                ${escapeHtml(r.studentName)}
                             </span>
-                        </td>
-                        <td class="p-3 whitespace-nowrap font-bold text-slate-800 text-sm align-top">
-                            ${escapeHtml(r.studentName)}
                         </td>
                         <td class="p-3 whitespace-nowrap font-medium text-slate-700 text-xs align-top">
                             ${r.serviceDate}
