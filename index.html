@@ -1248,62 +1248,60 @@
                 noData.classList.remove('hidden');
             } else {
                 noData.classList.add('hidden');
-                // 修改後的 renderTable() 內部產生列的程式碼：
-finalFiltered.forEach(r => {
-    // 判斷是否為第二位老師以套用膠囊顏色（也可依需求調整）
-    const isTeacher2 = teachers.indexOf(r.teacherName) === 1;
-    const badgeClass = isTeacher2 ? "bg-custom-t2-light text-custom-t2 border-blue-200" : "bg-cyan-50 text-cyan-700 border-cyan-100";
+                finalFiltered.forEach(r => {
+                    const isTeacher2 = teachers.indexOf(r.teacherName) === 1;
+                    const badgeClass = isTeacher2 ? "bg-custom-t2-light text-custom-t2 border-blue-200" : "bg-cyan-50 text-cyan-700 border-cyan-100";
 
-    const tr = document.createElement('tr');
-    tr.className = "hover:bg-slate-50/60 transition";
-    tr.innerHTML = `
-        <td class="p-3 whitespace-nowrap font-bold text-xs align-top">
-            <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
-                ${escapeHtml(r.semester || '114-1')}
-            </span>
-        </td>
-        <!-- 填表教師：改為一般粗體文字 -->
-        <td class="p-3 whitespace-nowrap font-bold text-slate-800 text-sm align-top">
-            ${escapeHtml(r.teacherName || '未指定')}
-        </td>
-        <!-- 學生：改為彩色膠囊標籤樣式 -->
-        <td class="p-3 whitespace-nowrap font-bold text-xs align-top">
-            <span class="px-2.5 py-0.5 rounded-full border ${badgeClass}">
-                ${escapeHtml(r.studentName)}
-            </span>
-        </td>
-        <td class="p-3 whitespace-nowrap font-medium text-slate-700 text-xs align-top">
-            ${r.serviceDate}
-        </td>
-        <td class="p-3 whitespace-nowrap align-top">
-            <div class="inline-block ${theme.bgLightClass} ${theme.textDarkClass} font-bold text-xs px-2.5 py-1 rounded-md mb-1 border border-slate-200">
-                ${r.durationMinutes} 分鐘
-            </div>
-            <div class="text-xs text-slate-400 font-normal">
-                ${r.startTime} - ${r.endTime}
-            </div>
-        </td>
-        <td class="p-3 max-w-xs align-top">
-            <div class="flex flex-wrap gap-1.5">
-                ${r.targets.map(t => `<span class="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-md font-medium">${escapeHtml(t)}</span>`).join('')}
-            </div>
-        </td>
-        <td class="p-3 max-w-xs align-top">
-            <div class="flex flex-wrap gap-1.5">
-                ${r.contents.map(c => `<span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-md font-medium border border-slate-200/60">${escapeHtml(c)}</span>`).join('')}
-            </div>
-        </td>
-        <td class="p-3 max-w-xs text-slate-500 text-xs truncate align-top" title="${escapeHtml(r.notes)}">
-            ${escapeHtml(r.notes) || '-'}
-        </td>
-        <td class="p-3 whitespace-nowrap text-center align-top">
-            <button onclick="deleteRecord(${r.id})" class="text-slate-300 hover:text-red-500 p-1 rounded transition" title="刪除紀錄">
-                <i class="fa-regular fa-trash-can text-sm"></i>
-            </button>
-        </td>
-    `;
-    tableBody.appendChild(tr);
-});
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50/60 transition";
+                    tr.innerHTML = `
+                        <td class="p-3 whitespace-nowrap font-bold text-xs align-top">
+                            <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
+                                ${escapeHtml(r.semester || '114-1')}
+                            </span>
+                        </td>
+                        <td class="p-3 whitespace-nowrap font-bold text-xs align-top">
+                            <span class="px-2.5 py-0.5 rounded-full border ${badgeClass}">
+                                ${escapeHtml(r.teacherName || '未指定')}
+                            </span>
+                        </td>
+                        <td class="p-3 whitespace-nowrap font-bold text-slate-800 text-sm align-top">
+                            ${escapeHtml(r.studentName)}
+                        </td>
+                        <td class="p-3 whitespace-nowrap font-medium text-slate-700 text-xs align-top">
+                            ${r.serviceDate}
+                        </td>
+                        <td class="p-3 whitespace-nowrap align-top">
+                            <div class="inline-block ${theme.bgLightClass} ${theme.textDarkClass} font-bold text-xs px-2.5 py-1 rounded-md mb-1 border border-slate-200">
+                                ${r.durationMinutes} 分鐘
+                            </div>
+                            <div class="text-xs text-slate-400 font-normal">
+                                ${r.startTime} - ${r.endTime}
+                            </div>
+                        </td>
+                        <td class="p-3 max-w-xs align-top">
+                            <div class="flex flex-wrap gap-1.5">
+                                ${r.targets.map(t => `<span class="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-md font-medium">${escapeHtml(t)}</span>`).join('')}
+                            </div>
+                        </td>
+                        <td class="p-3 max-w-xs align-top">
+                            <div class="flex flex-wrap gap-1.5">
+                                ${r.contents.map(c => `<span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-md font-medium border border-slate-200/60">${escapeHtml(c)}</span>`).join('')}
+                            </div>
+                        </td>
+                        <td class="p-3 max-w-xs text-slate-500 text-xs truncate align-top" title="${escapeHtml(r.notes)}">
+                            ${escapeHtml(r.notes) || '-'}
+                        </td>
+                        <td class="p-3 whitespace-nowrap text-center align-top">
+                            <button onclick="deleteRecord(${r.id})" class="text-slate-300 hover:text-red-500 p-1 rounded transition" title="刪除紀錄">
+                                <i class="fa-regular fa-trash-can text-sm"></i>
+                            </button>
+                        </td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+            }
+        }
 
         function renderAnalytics() {
             const theme = getCurrentTheme();
