@@ -9,9 +9,9 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- ExcelJS for Styled Excel Export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ExcelJS/4.3.0/exceljs.min.js"></script>
+    <script src="https://unpkg.com/exceljs@4.3.0/dist/exceljs.min.js"></script>
     <!-- FileSaver.js for File Saving -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+   <script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
     <!-- Chart.js for Visual Statistics -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -1352,6 +1352,17 @@
         }
 
         async function exportToExcel() {
+    // 檢查 ExcelJS 是否已成功載入
+    if (typeof ExcelJS === 'undefined') {
+        alert('ExcelJS 套件尚未載入完成或被網路阻擋，請重新整理頁面或檢查網路連線。');
+        return;
+    }
+
+    const filteredData = getFilteredRecords();
+    if (filteredData.length === 0) {
+        showToast('目前學期尚無資料可供匯出！', 'error');
+        return;
+    }
     const filteredData = getFilteredRecords();
     if (filteredData.length === 0) {
         showToast('目前學期尚無資料可供匯出！', 'error');
