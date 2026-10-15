@@ -98,7 +98,7 @@
         <!-- 1. Header (網頁名稱與說明) -->
         <div class="border-b border-slate-200 pb-4">
             <h1 class="text-xl sm:text-3xl font-bold text-slate-900 tracking-tight mb-2">
-                [<span id="headerSemesterTitle" class="text-cyan-700">114-1</span>] <span id="headerTeacherName">全校彙整</span> 間接服務紀錄表
+                [<span id="headerSemesterTitle" class="text-sky-800">114-1</span>] <span id="headerTeacherName">全校彙整</span> 間接服務紀錄表
             </h1>
             <p class="text-slate-500 text-xs sm:text-sm">
                 請填寫間接服務紀錄。系統支援跨學期切換、多位教師紀錄、全校總覽統計與匯出標準 Excel 報表。
@@ -168,12 +168,12 @@
         <form id="serviceForm" class="bg-white border border-slate-200 rounded-xl p-4 sm:p-8 shadow-sm space-y-5 sm:space-y-6">
             <div class="border-b border-slate-100 pb-3 mb-4 flex justify-between items-center gap-2">
                 <h2 class="text-base sm:text-lg font-semibold text-slate-900 flex items-center gap-2 truncate">
-                    <i id="formHeaderIcon" class="fa-solid fa-pen-to-square text-cyan-600 transition-colors shrink-0"></i>
-                    <span class="truncate">新增紀錄 (<span id="formSemesterBadge" class="text-cyan-700 font-bold">114-1</span> - <span id="formTeacherBadge" class="text-cyan-600 font-bold transition-colors">全校總覽</span>)</span>
+                    <i id="formHeaderIcon" class="fa-solid fa-pen-to-square text-sky-800 transition-colors shrink-0"></i>
+                    <span class="truncate">新增紀錄 (<span id="formSemesterBadge" class="text-sky-800 font-bold">114-1</span> - <span id="formTeacherBadge" class="text-sky-800 font-bold transition-colors">全校總覽</span>)</span>
                 </h2>
                 <button type="button" onclick="addNewStudentPrompt()" 
                         class="shrink-0 px-2.5 py-1.5 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition cursor-pointer border border-slate-200 flex items-center gap-1 shadow-sm">
-                    <i id="addStudentIcon" class="fa-solid fa-user-plus text-cyan-600 transition-colors"></i>
+                    <i id="addStudentIcon" class="fa-solid fa-user-plus text-sky-800 transition-colors"></i>
                     <span>新增學生</span>
                 </button>
             </div>
@@ -319,7 +319,7 @@
 
             <div class="flex justify-between items-center pt-4 border-t border-slate-100">
                 <button type="submit" id="submitBtn"
-                        class="bg-cyan-600 hover:bg-cyan-700 text-white font-medium px-5 py-2.5 rounded-md shadow-sm transition duration-150 flex items-center space-x-2 text-sm sm:text-base">
+                        class=" bg-sky-800 hover:bg-sky-900 text-white font-medium px-5 py-2.5 rounded-md shadow-sm transition duration-150 flex items-center space-x-2 text-sm sm:text-base">
                     <i class="fa-solid fa-check"></i>
                     <span>提交紀錄</span>
                 </button>
@@ -334,8 +334,8 @@
             
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-2 gap-3">
                 <h2 class="text-base sm:text-lg font-semibold text-slate-900 flex items-center gap-2 truncate">
-                    <i id="tableHeaderIcon" class="fa-solid fa-list-check text-cyan-600 transition-colors shrink-0"></i>
-                    <span class="truncate">歷史紀錄 [<span id="tableSemesterTitle" class="text-cyan-700 font-bold">114-1</span>] (<span id="tableTeacherTitle">全體教師紀錄</span>)</span>
+                    <i id="tableHeaderIcon" class="fa-solid fa-list-check text-sky-800 transition-colors shrink-0"></i>
+                    <span class="truncate">歷史紀錄 [<span id="tableSemesterTitle" class="text-sky-800 font-bold">114-1</span>] (<span id="tableTeacherTitle">全體教師紀錄</span>)</span>
                 </h2>
                 <button onclick="exportToExcel()" 
                         class="w-full sm:w-auto justify-center bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-medium px-4 py-2 rounded-md shadow-sm transition flex items-center gap-2">
@@ -558,17 +558,17 @@
 
         const themeConfig = {
             teacher0: {
-                headerBgColor: "#0c4a6e",
-                isDarkText: false,
-                textPrimaryClass: "text-cyan-600",
-                textDarkClass: "text-cyan-700",
-                bgLightClass: "bg-cyan-50",
-                btnPrimaryClass: "bg-cyan-600 hover:bg-cyan-700",
-                pillBgClass: "bg-cyan-50 border-cyan-100 text-cyan-800",
-                pillCloseClass: "text-cyan-400",
-                chartColor1: "#0891b2",
-                chartColor2: "#0284c7"
-            },
+    headerBgColor: "#0c4a6e",
+    isDarkText: false,
+    textPrimaryClass: "text-sky-800",        // 改為深天藍 / 藍色
+    textDarkClass: "text-sky-900",           // 深色文字
+    bgLightClass: "bg-sky-50",              // 淺藍底色
+    btnPrimaryClass: "bg-sky-800 hover:bg-sky-900", // 按鈕深藍色
+    pillBgClass: "bg-sky-50 border-sky-200 text-sky-900",
+    pillCloseClass: "text-sky-600",
+    chartColor1: "#0c4a6e",                  // 圖表改用最頂部的深藍色
+    chartColor2: "#0284c7"                   // 圖表輔助藍色
+},
             teacher1: {
                 headerBgColor: "#448aa6",
                 isDarkText: false,
