@@ -705,54 +705,60 @@
 }
 
         async function fetchRecordsFromGAS() {
-            if (!GAS_API_URL || GAS_API_URL.includes("YOUR_SCRIPT_ID")) return;
+    if (!GAS_API_URL || GAS_API_URL.includes("YOUR_SCRIPT_ID")) return;
 
-            try {
-                const res = await fetch(GAS_API_URL);
-                const data = await res.json();
-                
-                let hasChanges = false;
+    try {
+        const res = await fetch(GAS_API_URL);
+        const data = await res.json();
+        
+        let hasChanges = false;
 
-                if (data.records) {
-                    records = data.records.map(r => ({
-                        ...r,
-                        serviceDate: cleanDateStr(r.serviceDate),
-                        startTime: cleanTimeStr(r.startTime),
-                        endTime: cleanTimeStr(r.endTime)
-                    }));
-                    saveRecordsLocal();
-                    hasChanges = true;
-                }
-
-                if (data.semesters && data.semesters.length > 0) {
-                    semesters = data.semesters;
-                    saveSemestersLocal();
-                    hasChanges = true;
-                }
-
-                if (data.teachers && data.teachers.length > 0) {
-                    data.teachers.forEach(t => {
-                        if (!teachers.includes(t)) teachers.push(t);
-                    });
-                    saveTeachersLocal();
-                    hasChanges = true;
-                }
-
-                if (data.teacherStudentMap && Object.keys(data.teacherStudentMap).length > 0) {
-                    teacherStudentMap = { ...data.teacherStudentMap, ...teacherStudentMap };
-                    saveStudentMapLocal();
-                    hasChanges = true;
-                }
-
-                if (hasChanges) {
-                    renderSemesterSelect();
-                    renderTeacherSelect();
-                    render();
-                }
-            } catch (e) {
-                console.error("背景同步失敗，繼續使用本地快取資料", e);
-            }
+        if (data.records) {
+            records = data.records.map(r => ({
+                ...r,
+                serviceDate: cleanDateStr(r.serviceDate),
+                startTime: cleanTimeStr(r.startTime),
+                endTime: cleanTimeStr(r.endTime)
+            }));
+            saveRecordsLocal();
+            hasChanges = true;
         }
+
+        if (data.semesters && data.semesters.length > 0) {
+            semesters = data.semesters;
+            saveSemestersLocal();
+            hasChanges = true;
+        }
+
+        if (data.teachers && data.teachers.length > 0) {
+            data.teachers.forEach(t => {
+                if (!teachers.includes(t)) teachers.push(t);
+            });
+            saveTeachersLocal();
+            hasChanges = true;
+        }
+
+        // 修復重點：讓雲端 GAS 傳過來的學生名單優先覆蓋，並將兩邊的學生陣列做去重合併
+        if (data.teacherStudentMap && Object.keys(data.teacherStudentMap).length > 0) {
+            Object.keys(data.teacherStudentMap).forEach(teacher => {
+                const cloudStudents = data.teacherStudentMap[teacher] || [];
+                const localStudents = teacherStudentMap[teacher] || [];
+                // 聯集去重合併
+                teacherStudentMap[teacher] = Array.from(new Set([...cloudStudents, ...localStudents]));
+            });
+            saveStudentMapLocal();
+            hasChanges = true;
+        }
+
+        if (hasChanges) {
+            renderSemesterSelect();
+            renderTeacherSelect();
+            render();
+        }
+    } catch (e) {
+        console.error("背景同步失敗，繼續使用本地快取資料", e);
+    }
+}
 
         async function syncConfigToGAS() {
             if (!GAS_API_URL || GAS_API_URL.includes("YOUR_SCRIPT_ID")) return;
