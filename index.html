@@ -583,51 +583,56 @@
             return themeConfig.teacher0;
         }
 
-        window.onload = function() {
+       window.onload = function() {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('serviceDate').value = today;
 
-    // 1. 讀取 URL 網址上的 ?teacher= 參數
-    const urlParams = new URLSearchParams(window.location.search);
-    const teacherParam = urlParams.get('teacher');
-
-    // 2. 若網址有傳入教師姓名，強制寫入 LocalStorage
-    if (teacherParam) {
-        localStorage.setItem('zhu_current_teacher', teacherParam);
-    }
-
+    // 1. 先讀取與更新本地資料
     loadLocalDataToUI();
+
+    // 2. 從 GAS 靜默獲取雲端最新資料
     fetchRecordsFromGAS();
 };
 
-        function loadLocalDataToUI() {
-            loadSemestersLocal();
-            loadTeachersLocal();
-            loadStudentListMapLocal();
-            loadRecordsLocal();
+function loadLocalDataToUI() {
+    loadSemestersLocal();
+    loadTeachersLocal();
+    loadStudentListMapLocal();
+    loadRecordsLocal();
 
-            const savedSemester = localStorage.getItem('zhu_current_semester');
-            const savedTeacher = localStorage.getItem('zhu_current_teacher');
+    // 讀取 URL 網址上的 ?teacher= 參數
+    const urlParams = new URLSearchParams(window.location.search);
+    const teacherParam = urlParams.get('teacher');
 
-            if (savedSemester && semesters.includes(savedSemester)) {
-                currentSemester = savedSemester;
-            } else if (semesters.length > 0) {
-                currentSemester = semesters[0];
-            }
+    const savedSemester = localStorage.getItem('zhu_current_semester');
+    const savedTeacher = teacherParam || localStorage.getItem('zhu_current_teacher');
 
-            if (savedTeacher && teachers.includes(savedTeacher)) {
-                currentTeacher = savedTeacher;
-            } else if (teachers.length > 0) {
-                currentTeacher = teachers[0];
-            } else {
-                currentTeacher = "";
-            }
-
-            renderSemesterSelect();
-            renderTeacherSelect();
-            render();
+    // 若網址有傳入 teacher 參數，強制將該教師加進選單清單中（避免被判定為無效教師而被踢回第一位）
+    if (teacherParam && !teachers.includes(teacherParam)) {
+        teachers.push(teacherParam);
+        if (!teacherStudentMap[teacherParam]) {
+            teacherStudentMap[teacherParam] = [];
         }
+    }
 
+    if (savedSemester && semesters.includes(savedSemester)) {
+        currentSemester = savedSemester;
+    } else if (semesters.length > 0) {
+        currentSemester = semesters[0];
+    }
+
+    if (savedTeacher && teachers.includes(savedTeacher)) {
+        currentTeacher = savedTeacher;
+    } else if (teachers.length > 0) {
+        currentTeacher = teachers[0];
+    } else {
+        currentTeacher = "";
+    }
+
+    renderSemesterSelect();
+    renderTeacherSelect();
+    render();
+}
         async function fetchRecordsFromGAS() {
             if (!GAS_API_URL || GAS_API_URL.includes("YOUR_SCRIPT_ID")) return;
 
