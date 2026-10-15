@@ -602,61 +602,92 @@
             return themeConfig.teacher0;
         }
 
-        window.onload = function() {
+       window.onload = function() {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('serviceDate').value = today;
     
-    // 初始化直接由雲端載入資料
+    // 1. 第一時間先載入本地快取資料（瞬間顯示畫面，0 秒等待）
+    loadLocalDataToUI();
+
+    // 2. 背景靜默向 GAS 抓取最新資料並更新
     fetchRecordsFromGAS();
 };
 
-// GAS 雙向同步核心函式
-async function fetchRecordsFromGAS() {
-    if (!GAS_API_URL || GAS_API_URL.includes("YOUR_SCRIPT_ID")) {
-        alert("請先設定正確的 GAS_API_URL！");
-        return;
+// 讀取本地快取並渲染畫面的輔助函數
+function loadLocalDataToUI() {
+    loadSemestersLocal();
+    loadTeachersLocal();
+    loadStudentListMapLocal();
+    loadRecordsLocal();
+
+    const savedSemester = localStorage.getItem('zhu_current_semester');
+    const savedTeacher = localStorage.getItem('zhu_current_teacher');
+
+    if (savedSemester && semesters.includes(savedSemester)) {
+        currentSemester = savedSemester;
+    } else if (semesters.length > 0) {
+        currentSemester = semesters[0];
     }
+
+    if (savedTeacher && (teachers.includes(savedTeacher) || savedTeacher === "ALL")) {
+        currentTeacher = savedTeacher;
+    } else if (teachers.length > 0) {
+        currentTeacher = teachers[0];
+    } else {
+        currentTeacher = "ALL";
+    }
+
+    renderSemesterSelect();
+    renderTeacherSelect();
+    render();
+}
+
+// GAS 雙向同步核心函式 (背景靜默同步)
+async function fetchRecordsFromGAS() {
+    if (!GAS_API_URL || GAS_API_URL.includes("YOUR_SCRIPT_ID")) return;
+
     try {
         const res = await fetch(GAS_API_URL);
         const data = await res.json();
         
+        let hasChanges = false;
+
         // 1. 同步雲端紀錄
         if (data.records) {
             records = data.records;
             saveRecordsLocal();
+            hasChanges = true;
         }
 
         // 2. 同步學期清單
         if (data.semesters && data.semesters.length > 0) {
             semesters = data.semesters;
             saveSemestersLocal();
-        } else {
-            const autoCurrentSemester = getCurrentSemesterByDate();
-            if (!semesters.includes(autoCurrentSemester)) semesters.push(autoCurrentSemester);
+            hasChanges = true;
         }
 
         // 3. 同步教師清單
         if (data.teachers && data.teachers.length > 0) {
             teachers = data.teachers;
             saveTeachersLocal();
+            hasChanges = true;
         }
 
         // 4. 同步學生名單 Mapping
         if (data.teacherStudentMap && Object.keys(data.teacherStudentMap).length > 0) {
             teacherStudentMap = data.teacherStudentMap;
             saveStudentMapLocal();
+            hasChanges = true;
         }
 
-        // 設定當前學期與教師預設值
-        currentSemester = semesters.length > 0 ? semesters[0] : getCurrentSemesterByDate();
-        currentTeacher = teachers.length > 0 ? teachers[0] : "ALL";
-
-        renderSemesterSelect();
-        renderTeacherSelect();
-        render();
+        // 若資料有更新，重新渲染畫面
+        if (hasChanges) {
+            renderSemesterSelect();
+            renderTeacherSelect();
+            render();
+        }
     } catch (e) {
-        console.error("GAS 載入失敗", e);
-        showToast("雲端資料連線失敗，請檢查網路設定", "error");
+        console.error("背景同步失敗，繼續使用本地快取資料", e);
     }
 }
 
