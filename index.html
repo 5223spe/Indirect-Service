@@ -584,12 +584,21 @@
         }
 
         window.onload = function() {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('serviceDate').value = today;
-            
-            loadLocalDataToUI();
-            fetchRecordsFromGAS();
-        };
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('serviceDate').value = today;
+
+    // 1. 讀取網址上的 ?teacher= 參數
+    const urlParams = new URLSearchParams(window.location.search);
+    const teacherParam = urlParams.get('teacher');
+
+    // 2. 如果網址中有指定教師，優先寫入暫存記憶
+    if (teacherParam) {
+        localStorage.setItem('zhu_current_teacher', teacherParam);
+    }
+
+    loadLocalDataToUI();
+    fetchRecordsFromGAS();
+};
 
         function loadLocalDataToUI() {
             loadSemestersLocal();
