@@ -29,7 +29,16 @@
         .border-custom-t2 { border-color: #448aa6; }
         .bg-custom-t2-light { background-color: #edf6f9; }
 
-        /* 手機響應式專用優化（僅影響 640px 以下手機螢幕，電腦版完全不受影響） */
+        /* 防 iOS input 寬度爆表與灰框溢出修正 */
+        input[type="date"], input[type="time"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            box-sizing: border-box !important;
+            max-width: 100% !important;
+        }
+
+        /* 手機響應式專用優化（僅影響 640px 以下手機螢幕） */
         @media (max-width: 639px) {
             body {
                 padding-top: 1rem !important;
@@ -94,8 +103,9 @@
             <h1 class="text-xl sm:text-3xl font-bold text-slate-900 tracking-tight mb-2">
                 [<span id="headerSemesterTitle" class="text-sky-800">114-1</span>] <span id="headerTeacherName">教師</span> 間接服務紀錄表
             </h1>
+            <!-- 手機版隱藏說明文字 -->
             <p class="text-slate-500 text-xs sm:text-sm hidden sm:block">
-                請填寫間接服務紀錄。系統支援跨學期切換、教師紀錄統計與匯出標準 Excel 報表。
+                請填寫間接服務紀錄。系統支援跨學期切換、多位教師紀錄統計與匯出標準 Excel 報表。
             </p>
         </div>
 
@@ -159,7 +169,7 @@
         </div>
 
         <!-- 3. Form Start (新增服務紀錄) -->
-        <form id="serviceForm" class="bg-white border border-slate-200 rounded-xl p-4 sm:p-8 shadow-sm space-y-5 sm:space-y-6">
+        <form id="serviceForm" class="bg-white border border-slate-200 rounded-xl p-4 sm:p-8 shadow-sm space-y-5 sm:space-y-6 overflow-hidden">
             <div class="border-b border-slate-100 pb-3 mb-4 flex justify-between items-center gap-2">
                 <h2 class="text-base sm:text-lg font-semibold text-slate-900 flex items-center gap-2 truncate">
                     <i id="formHeaderIcon" class="fa-solid fa-pen-to-square text-sky-800 transition-colors shrink-0"></i>
@@ -193,32 +203,32 @@
                     </div>
                 </div>
 
-                <!-- 服務日期：加上 min-w-0 避免灰框溢出螢幕 -->
-<div class="w-full sm:w-1/2 min-w-0">
-    <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
-        服務日期 <span class="text-red-500">*</span>
-    </label>
-    <input type="date" id="serviceDate" required
-           class="w-full px-3 py-2 text-xs sm:text-base border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition box-border">
-</div>
+                <!-- 服務日期：修復灰框超越白框的問題 -->
+                <div class="w-full sm:w-1/2">
+                    <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
+                        服務日期 <span class="text-red-500">*</span>
+                    </label>
+                    <input type="date" id="serviceDate" required
+                           class="w-full max-w-full px-3 py-2 text-xs sm:text-base border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition box-border">
+                </div>
 
-<!-- 開始與結束時間：使用 flex 搭配 gap-3 保留中間空格，同時防重疊 -->
-<div class="flex flex-row items-center gap-3 sm:gap-6 w-full">
-    <div class="flex-1 min-w-0">
-        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1 truncate">
-            開始時間 <span class="text-red-500">*</span>
-        </label>
-        <input type="time" id="startTime" required onchange="calculateMinutes()"
-               class="w-full px-1.5 sm:px-2.5 py-2 text-xs sm:text-base border border-slate-300 rounded-md text-slate-800 text-center sm:text-left focus:outline-none focus:ring-2 focus:ring-cyan-500 box-border">
-    </div>
-    <div class="flex-1 min-w-0">
-        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1 truncate">
-            結束時間 <span class="text-red-500">*</span>
-        </label>
-        <input type="time" id="endTime" required onchange="calculateMinutes()"
-               class="w-full px-1.5 sm:px-2.5 py-2 text-xs sm:text-base border border-slate-300 rounded-md text-slate-800 text-center sm:text-left focus:outline-none focus:ring-2 focus:ring-cyan-500 box-border">
-    </div>
-</div>
+                <!-- 開始與結束時間：左右並排、拉開間距、文字自動適應不重疊 -->
+                <div class="flex flex-row items-center gap-3 sm:gap-6 w-full">
+                    <div class="flex-1 min-w-0">
+                        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1 truncate">
+                            開始時間 <span class="text-red-500">*</span>
+                        </label>
+                        <input type="time" id="startTime" required onchange="calculateMinutes()"
+                               class="w-full max-w-full px-1.5 sm:px-2.5 py-2 text-xs sm:text-base border border-slate-300 rounded-md text-slate-800 text-center sm:text-left focus:outline-none focus:ring-2 focus:ring-cyan-500 box-border">
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1 truncate">
+                            結束時間 <span class="text-red-500">*</span>
+                        </label>
+                        <input type="time" id="endTime" required onchange="calculateMinutes()"
+                               class="w-full max-w-full px-1.5 sm:px-2.5 py-2 text-xs sm:text-base border border-slate-300 rounded-md text-slate-800 text-center sm:text-left focus:outline-none focus:ring-2 focus:ring-cyan-500 box-border">
+                    </div>
+                </div>
             </div>
 
             <div>
@@ -353,8 +363,8 @@
                 <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-end">
                     <div class="relative flex-1 sm:flex-none">
                         <select id="filterStudent" onchange="renderTable()" 
-        class="w-full sm:w-auto appearance-none bg-slate-100/80 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs sm:text-sm font-medium rounded-xl pl-4 pr-10 py-1.5 sm:py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 cursor-pointer transition truncate">
-</select>
+                                class="w-full sm:w-auto appearance-none bg-slate-100/80 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs sm:text-sm font-medium rounded-xl pl-4 pr-10 py-1.5 sm:py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 cursor-pointer transition truncate">
+                        </select>
                         <span class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-slate-500">
                             <i class="fa-solid fa-chevron-down text-xs"></i>
                         </span>
@@ -552,7 +562,6 @@
         let trendChartInstance = null;
         let focusTargetElement = null;
 
-        // 清理日期字串：將 2026-10-14T16:00:00.000Z 轉為 2026-10-14
         function cleanDateStr(dateStr) {
             if (!dateStr) return '';
             if (typeof dateStr === 'string' && dateStr.includes('T')) {
@@ -561,7 +570,6 @@
             return dateStr;
         }
 
-        // 清理時間字串：將 1899-12-30T07:06:00.000Z 轉為 07:06
         function cleanTimeStr(timeStr) {
             if (!timeStr) return '';
             if (typeof timeStr === 'string' && timeStr.includes('T')) {
@@ -609,10 +617,7 @@
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('serviceDate').value = today;
 
-            // 1. 先讀取與更新本地資料並套用網址教師參數
             loadLocalDataToUI();
-
-            // 2. 從 GAS 靜默獲取雲端最新資料
             fetchRecordsFromGAS();
         };
 
@@ -622,13 +627,11 @@
             loadStudentListMapLocal();
             loadRecordsLocal();
 
-            // 讀取 URL 網址上的 ?teacher= 參數
             const urlParams = new URLSearchParams(window.location.search);
             const teacherParam = urlParams.get('teacher');
 
             const savedSemester = localStorage.getItem('zhu_current_semester');
 
-            // 若網址有傳入 teacher 參數，強制將該教師加進選單清單中（若不存在）
             if (teacherParam && teacherParam.trim() !== "") {
                 const cleanTeacherParam = teacherParam.trim();
                 if (!teachers.includes(cleanTeacherParam)) {
@@ -651,15 +654,13 @@
                 }
             }
 
-            const autoCalculatedSemester = getCurrentSemesterByDate(); // 自動計算當前學期
+            const autoCalculatedSemester = getCurrentSemesterByDate();
 
-            // 若清單中沒有自動算出的學期，就自動把當前學期加進學期選單中
             if (!semesters.includes(autoCalculatedSemester)) {
                 semesters.unshift(autoCalculatedSemester);
                 saveSemestersLocal();
             }
 
-            // 優先套用上一次選過的學期，否則自動選取算出來的當前學期
             if (savedSemester && semesters.includes(savedSemester)) {
                 currentSemester = savedSemester;
             } else {
@@ -698,7 +699,6 @@
                 }
 
                 if (data.teachers && data.teachers.length > 0) {
-                    // 合併雲端教師清單，確保不覆蓋當前網址設定的教師
                     data.teachers.forEach(t => {
                         if (!teachers.includes(t)) teachers.push(t);
                     });
@@ -713,7 +713,6 @@
                 }
 
                 if (hasChanges) {
-                    // 重新繪製選單時，鎖定當前的 currentTeacher，避免被重置
                     renderSemesterSelect();
                     renderTeacherSelect();
                     render();
@@ -1615,11 +1614,10 @@
             return str ? str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : '';
         }
 
-        // 自動根據今日日期計算台灣學年度與學期 (8月~隔年1月為第一學期，2月~7月為第二學期)
         function getCurrentSemesterByDate() {
             const today = new Date();
             const year = today.getFullYear();
-            const month = today.getMonth() + 1; // 1 ~ 12 月
+            const month = today.getMonth() + 1;
 
             let rocYear;
             let semesterTerm;
