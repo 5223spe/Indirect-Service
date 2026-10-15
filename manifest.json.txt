@@ -1,0 +1,16 @@
+{
+  "name": "教師間接服務紀錄系統",
+  "short_name": "間接服務",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0c4a6e",
+  "icons": [
+    {
+      "src": "icon.jpg",
+      "sizes": "192x192 512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}
