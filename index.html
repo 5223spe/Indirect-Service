@@ -1196,68 +1196,70 @@
         }
 
         document.getElementById('serviceForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+    e.preventDefault();
 
-            if (!currentTeacher) {
-                showAlertModal(['請先在頂部選單選擇或建立具體的「教師姓名」後再填寫紀錄！']);
-                return;
-            }
+    if (!currentTeacher) {
+        showAlertModal(['請先在頂部選單選擇或建立具體的「教師姓名」後再填寫紀錄！']);
+        return;
+    }
 
-            const studentNameInput = document.getElementById('studentName');
-            const studentName = studentNameInput.value.trim();
-            const serviceDate = document.getElementById('serviceDate').value;
-            const startTime = document.getElementById('startTime').value;
-            const endTime = document.getElementById('endTime').value;
-            const durationMinutes = document.getElementById('durationMinutes').value;
+    const studentNameInput = document.getElementById('studentName');
+    const studentName = studentNameInput.value.trim();
+    const serviceDate = document.getElementById('serviceDate').value;
+    const startTime = document.getElementById('startTime').value;
+    const endTime = document.getElementById('endTime').value;
+    const durationMinutes = document.getElementById('durationMinutes').value;
 
-            const targets = Array.from(document.querySelectorAll('input[name="target"]:checked')).map(cb => cb.value);
-            const contents = Array.from(document.querySelectorAll('input[name="content"]:checked')).map(cb => cb.value);
+    const targets = Array.from(document.querySelectorAll('input[name="target"]:checked')).map(cb => cb.value);
+    const contents = Array.from(document.querySelectorAll('input[name="content"]:checked')).map(cb => cb.value);
 
-            const missingItems = [];
-            let targetFocusEl = null;
+    const missingItems = [];
+    let targetFocusEl = null;
 
-            if (!studentName) { missingItems.push('請輸入或選擇「服務學生姓名」'); if (!targetFocusEl) targetFocusEl = studentNameInput; }
-            if (!serviceDate) { missingItems.push('請選擇「服務日期」'); if (!targetFocusEl) targetFocusEl = document.getElementById('serviceDate'); }
-            if (!startTime || !endTime || !durationMinutes || parseInt(durationMinutes) <= 0) {
-                missingItems.push('請設定正確的「服務時間與分鐘數」'); if (!targetFocusEl) targetFocusEl = document.getElementById('startTime');
-            }
-            if (targets.length === 0) missingItems.push('請至少勾選一項「服務對象」');
-            if (contents.length === 0) missingItems.push('請至少勾選一項「間接服務內容」');
+    if (!studentName) { missingItems.push('請輸入或選擇「服務學生姓名」'); if (!targetFocusEl) targetFocusEl = studentNameInput; }
+    if (!serviceDate) { missingItems.push('請選擇「服務日期」'); if (!targetFocusEl) targetFocusEl = document.getElementById('serviceDate'); }
+    if (!startTime || !endTime || !durationMinutes || parseInt(durationMinutes) <= 0) {
+        missingItems.push('請設定正確的「服務時間與分鐘數」'); if (!targetFocusEl) targetFocusEl = document.getElementById('startTime');
+    }
+    if (targets.length === 0) missingItems.push('請至少勾選一項「服務對象」');
+    if (contents.length === 0) missingItems.push('請至少勾選一項「間接服務內容」');
 
-            if (missingItems.length > 0) {
-                showAlertModal(missingItems, targetFocusEl);
-                return;
-            }
+    if (missingItems.length > 0) {
+        showAlertModal(missingItems, targetFocusEl);
+        return;
+    }
 
-            const teacherStudents = getCurrentTeacherStudents();
-            if (studentName && !teacherStudents.includes(studentName)) {
-                teacherStudents.push(studentName);
-                saveStudentListMap();
-            }
+    // 1. 如果是新學生，將其加入該教師的名單並同步至雲端
+    const teacherStudents = getCurrentTeacherStudents();
+    if (studentName && !teacherStudents.includes(studentName)) {
+        teacherStudents.push(studentName);
+        saveStudentMapLocal(); // 儲存至本地
+        syncConfigToGAS();     // 關鍵修正：同時同步學生名單設定至雲端 GAS
+    }
 
-            const record = {
-                id: Date.now(),
-                semester: currentSemester,
-                teacherName: currentTeacher,
-                studentName: studentName,
-                serviceDate: serviceDate,
-                startTime: startTime,
-                endTime: endTime,
-                durationMinutes: parseInt(durationMinutes) || 0,
-                targets: targets,
-                contents: contents,
-                notes: document.getElementById('notes').value.trim(),
-                createdAt: new Date().toLocaleString('zh-TW')
-            };
+    const record = {
+        id: Date.now(),
+        semester: currentSemester,
+        teacherName: currentTeacher,
+        studentName: studentName,
+        serviceDate: serviceDate,
+        startTime: startTime,
+        endTime: endTime,
+        durationMinutes: parseInt(durationMinutes) || 0,
+        targets: targets,
+        contents: contents,
+        notes: document.getElementById('notes').value.trim(),
+        createdAt: new Date().toLocaleString('zh-TW')
+    };
 
-            records.unshift(record);
-            saveRecordsLocal();
-            syncRecordToGAS(record);
+    records.unshift(record);
+    saveRecordsLocal();
+    syncRecordToGAS(record); // 同步紀錄至雲端 GAS
 
-            render();
-            resetForm();
-            showToast(`[${currentSemester}] 服務紀錄新增成功！`, 'success');
-        });
+    render();
+    resetForm();
+    showToast(`[${currentSemester}] 服務紀錄新增成功！`, 'success');
+});
 
         function resetForm() {
             document.getElementById('serviceForm').reset();
