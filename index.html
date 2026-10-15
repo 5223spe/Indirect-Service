@@ -587,7 +587,7 @@
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('serviceDate').value = today;
 
-    // 1. 先讀取與更新本地資料
+    // 1. 先讀取與更新本地資料並套用網址教師參數
     loadLocalDataToUI();
 
     // 2. 從 GAS 靜默獲取雲端最新資料
@@ -605,13 +605,27 @@ function loadLocalDataToUI() {
     const teacherParam = urlParams.get('teacher');
 
     const savedSemester = localStorage.getItem('zhu_current_semester');
-    const savedTeacher = teacherParam || localStorage.getItem('zhu_current_teacher');
 
-    // 若網址有傳入 teacher 參數，強制將該教師加進選單清單中（避免被判定為無效教師而被踢回第一位）
-    if (teacherParam && !teachers.includes(teacherParam)) {
-        teachers.push(teacherParam);
-        if (!teacherStudentMap[teacherParam]) {
-            teacherStudentMap[teacherParam] = [];
+    // 若網址有傳入 teacher 參數，強制將該教師加進選單清單中（若不存在）
+    if (teacherParam && teacherParam.trim() !== "") {
+        const cleanTeacherParam = teacherParam.trim();
+        if (!teachers.includes(cleanTeacherParam)) {
+            teachers.push(cleanTeacherParam);
+            if (!teacherStudentMap[cleanTeacherParam]) {
+                teacherStudentMap[cleanTeacherParam] = [];
+            }
+            saveTeachersLocal();
+            saveStudentMapLocal();
+        }
+        currentTeacher = cleanTeacherParam;
+    } else {
+        const savedTeacher = localStorage.getItem('zhu_current_teacher');
+        if (savedTeacher && teachers.includes(savedTeacher)) {
+            currentTeacher = savedTeacher;
+        } else if (teachers.length > 0) {
+            currentTeacher = teachers[0];
+        } else {
+            currentTeacher = "";
         }
     }
 
@@ -621,61 +635,57 @@ function loadLocalDataToUI() {
         currentSemester = semesters[0];
     }
 
-    if (savedTeacher && teachers.includes(savedTeacher)) {
-        currentTeacher = savedTeacher;
-    } else if (teachers.length > 0) {
-        currentTeacher = teachers[0];
-    } else {
-        currentTeacher = "";
-    }
-
     renderSemesterSelect();
     renderTeacherSelect();
     render();
 }
-        async function fetchRecordsFromGAS() {
-            if (!GAS_API_URL || GAS_API_URL.includes("YOUR_SCRIPT_ID")) return;
 
-            try {
-                const res = await fetch(GAS_API_URL);
-                const data = await res.json();
-                
-                let hasChanges = false;
+async function fetchRecordsFromGAS() {
+    if (!GAS_API_URL || GAS_API_URL.includes("YOUR_SCRIPT_ID")) return;
 
-                if (data.records) {
-                    records = data.records;
-                    saveRecordsLocal();
-                    hasChanges = true;
-                }
+    try {
+        const res = await fetch(GAS_API_URL);
+        const data = await res.json();
+        
+        let hasChanges = false;
 
-                if (data.semesters && data.semesters.length > 0) {
-                    semesters = data.semesters;
-                    saveSemestersLocal();
-                    hasChanges = true;
-                }
-
-                if (data.teachers && data.teachers.length > 0) {
-                    teachers = data.teachers;
-                    saveTeachersLocal();
-                    hasChanges = true;
-                }
-
-                if (data.teacherStudentMap && Object.keys(data.teacherStudentMap).length > 0) {
-                    teacherStudentMap = data.teacherStudentMap;
-                    saveStudentMapLocal();
-                    hasChanges = true;
-                }
-
-                if (hasChanges) {
-                    renderSemesterSelect();
-                    renderTeacherSelect();
-                    render();
-                }
-            } catch (e) {
-                console.error("背景同步失敗，繼續使用本地快取資料", e);
-            }
+        if (data.records) {
+            records = data.records;
+            saveRecordsLocal();
+            hasChanges = true;
         }
 
+        if (data.semesters && data.semesters.length > 0) {
+            semesters = data.semesters;
+            saveSemestersLocal();
+            hasChanges = true;
+        }
+
+        if (data.teachers && data.teachers.length > 0) {
+            // 合併雲端教師清單，確保不覆蓋當前網址設定的教師
+            data.teachers.forEach(t => {
+                if (!teachers.includes(t)) teachers.push(t);
+            });
+            saveTeachersLocal();
+            hasChanges = true;
+        }
+
+        if (data.teacherStudentMap && Object.keys(data.teacherStudentMap).length > 0) {
+            teacherStudentMap = { ...data.teacherStudentMap, ...teacherStudentMap };
+            saveStudentMapLocal();
+            hasChanges = true;
+        }
+
+        if (hasChanges) {
+            // 重新繪製選單時，鎖定當前的 currentTeacher，避免被重置
+            renderSemesterSelect();
+            renderTeacherSelect();
+            render();
+        }
+    } catch (e) {
+        console.error("背景同步失敗，繼續使用本地快取資料", e);
+    }
+}
         async function syncConfigToGAS() {
             if (!GAS_API_URL || GAS_API_URL.includes("YOUR_SCRIPT_ID")) return;
             try {
