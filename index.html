@@ -537,18 +537,18 @@
     </div>
 
     <script>
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyvV4qYK_9vcpfZGs6gxCLxyCvMANvgPrqQXyPE26enqPc7tYzgmf7ltWKlyiJHMPe_-w/exec";
+        // 直接讀取 Google 伺服器注入的雲端最新資料，避免二次載入等待
+        const initialServerData = <?= serverData ?>;
 
-        const defaultSemesters = [];
-        let semesters = [];
-        let currentSemester = "115-1";
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwc3KvwN4OFdH-9s5WHGtKi-LCttbMo3jP29EGwHp9DJ6UEWV1K2dCrSyRMvo6x3yrCQQ/exec";
 
-        const defaultTeachers = [];
-        let teachers = [];
+        let semesters = initialServerData.semesters || ["115-1", "114-2", "114-1"];
+        let currentSemester = semesters[0] || "115-1";
 
-        let teacherStudentMap = {};
+        let teachers = initialServerData.teachers || [];
+        let teacherStudentMap = initialServerData.teacherStudentMap || {};
 
-        let records = [];
+        let records = initialServerData.records || [];
         let currentTeacher = "ALL";
 
         let targetChartInstance = null;
@@ -558,17 +558,17 @@
 
         const themeConfig = {
             teacher0: {
-    headerBgColor: "#0c4a6e",
-    isDarkText: false,
-    textPrimaryClass: "text-sky-800",        // 改為深天藍 / 藍色
-    textDarkClass: "text-sky-900",           // 深色文字
-    bgLightClass: "bg-sky-50",              // 淺藍底色
-    btnPrimaryClass: "bg-sky-800 hover:bg-sky-900", // 按鈕深藍色
-    pillBgClass: "bg-sky-50 border-sky-200 text-sky-900",
-    pillCloseClass: "text-sky-600",
-    chartColor1: "#0c4a6e",                  // 圖表改用最頂部的深藍色
-    chartColor2: "#0284c7"                   // 圖表輔助藍色
-},
+                headerBgColor: "#0c4a6e",
+                isDarkText: false,
+                textPrimaryClass: "text-sky-800",        // 搭配最頂部深藍色系
+                textDarkClass: "text-sky-900",
+                bgLightClass: "bg-sky-50",
+                btnPrimaryClass: "bg-sky-800 hover:bg-sky-900",
+                pillBgClass: "bg-sky-50 border-sky-200 text-sky-900",
+                pillCloseClass: "text-sky-600",
+                chartColor1: "#0c4a6e",
+                chartColor2: "#0284c7"
+            },
             teacher1: {
                 headerBgColor: "#448aa6",
                 isDarkText: false,
@@ -605,21 +605,14 @@
         window.onload = function() {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('serviceDate').value = today;
-            
-            loadSemestersLocal();
-            loadTeachersLocal();
-            loadStudentListMapLocal();
 
             const urlParams = new URLSearchParams(window.location.search);
             const teacherParam = urlParams.get('teacher');
             const semesterParam = urlParams.get('semester');
 
-            const savedTeacher = localStorage.getItem('zhu_current_teacher');
-
             const autoCurrentSemester = getCurrentSemesterByDate();
             if (!semesters.includes(autoCurrentSemester)) {
                 semesters.push(autoCurrentSemester);
-                saveSemesters();
             }
 
             if (semesterParam && semesters.includes(semesterParam)) {
@@ -630,56 +623,17 @@
 
             if (teacherParam && teachers.includes(teacherParam)) {
                 currentTeacher = teacherParam;
-            } else if (savedTeacher && teachers.includes(savedTeacher)) {
-                currentTeacher = savedTeacher;
             } else if (teachers.length > 0) {
                 currentTeacher = teachers[0];
             } else {
                 currentTeacher = "ALL";
             }
 
-            fetchRecordsFromGAS();
+            // 直接開網頁秒顯畫面，無需任何等待與 LocalStorage 依賴
+            renderSemesterSelect();
+            renderTeacherSelect();
+            render();
         };
-
-        // GAS 雙向同步核心函式
-        async function fetchRecordsFromGAS() {
-            if (!GAS_API_URL || GAS_API_URL.includes("YOUR_SCRIPT_ID")) {
-                loadRecordsLocal();
-                return;
-            }
-            try {
-                const res = await fetch(GAS_API_URL);
-                const data = await res.json();
-                
-                if (data.records) {
-                    records = data.records.map(r => ({ ...r, semester: r.semester || "114-1" }));
-                    saveRecordsLocal();
-
-                    if (data.semesters && data.semesters.length > 0) {
-                        semesters = data.semesters;
-                        saveSemestersLocal();
-                    }
-                    if (data.teachers && data.teachers.length > 0) {
-                        teachers = data.teachers;
-                        saveTeachersLocal();
-                    }
-                    if (data.teacherStudentMap && Object.keys(data.teacherStudentMap).length > 0) {
-                        teacherStudentMap = data.teacherStudentMap;
-                        saveStudentMapLocal();
-                    }
-                } else if (Array.isArray(data)) {
-                    records = data.map(r => ({ ...r, semester: r.semester || "114-1" }));
-                    saveRecordsLocal();
-                }
-
-                renderSemesterSelect();
-                renderTeacherSelect();
-                render();
-            } catch (e) {
-                console.error("GAS 載入失敗，改讀 LocalStorage", e);
-                loadRecordsLocal();
-            }
-        }
 
         async function syncConfigToGAS() {
             if (!GAS_API_URL || GAS_API_URL.includes("YOUR_SCRIPT_ID")) return;
@@ -714,62 +668,20 @@
             }
         }
 
-        // 本地快取讀寫管理
-        function loadSemestersLocal() {
-            const stored = localStorage.getItem('zhu_semester_list');
-            semesters = stored ? JSON.parse(stored) : [...defaultSemesters];
-        }
-        function saveSemestersLocal() {
-            localStorage.setItem('zhu_semester_list', JSON.stringify(semesters));
-        }
         function saveSemesters() {
-            saveSemestersLocal();
             renderSemesterSelect();
             syncConfigToGAS();
         }
 
-        function loadTeachersLocal() {
-            const stored = localStorage.getItem('zhu_teacher_list');
-            teachers = stored ? JSON.parse(stored) : [...defaultTeachers];
-        }
-        function saveTeachersLocal() {
-            localStorage.setItem('zhu_teacher_list', JSON.stringify(teachers));
-        }
         function saveTeachers() {
-            saveTeachersLocal();
             renderTeacherSelect();
             syncConfigToGAS();
         }
 
-        function loadStudentListMapLocal() {
-            const storedMap = localStorage.getItem('zhu_teacher_student_map');
-            if (storedMap) {
-                teacherStudentMap = JSON.parse(storedMap);
-            } else {
-                teacherStudentMap = {};
-                teachers.forEach(t => { teacherStudentMap[t] = []; });
-            }
-        }
-        function saveStudentMapLocal() {
-            localStorage.setItem('zhu_teacher_student_map', JSON.stringify(teacherStudentMap));
-        }
         function saveStudentListMap() {
-            saveStudentMapLocal();
             renderStudentPills();
             updateFilterStudentDropdown();
             syncConfigToGAS();
-        }
-
-        function loadRecordsLocal() {
-            const stored = localStorage.getItem('zhu_teacher_service_records');
-            records = stored ? JSON.parse(stored) : [];
-            records = records.map(r => ({ ...r, semester: r.semester || "114-1" }));
-            renderSemesterSelect();
-            renderTeacherSelect();
-            render();
-        }
-        function saveRecordsLocal() {
-            localStorage.setItem('zhu_teacher_service_records', JSON.stringify(records));
         }
 
         function renderSemesterSelect() {
@@ -790,7 +702,6 @@
         function switchSemester() {
             const val = document.getElementById('activeSemesterSelect').value;
             currentSemester = val;
-            localStorage.setItem('zhu_current_semester', val);
 
             document.getElementById('headerSemesterTitle').innerText = val;
             document.getElementById('formSemesterBadge').innerText = val;
@@ -866,8 +777,6 @@
             const val = document.getElementById('activeTeacherSelect').value;
             currentTeacher = val;
 
-            localStorage.setItem('zhu_current_teacher', val);
-
             const studentInput = document.getElementById('studentName');
             const studentDropdown = document.getElementById('studentDropdown');
             if (studentInput) studentInput.value = '';
@@ -920,6 +829,7 @@
                 manageBtn.className = "px-3.5 py-2 text-xs bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition duration-150 cursor-pointer border border-white/20 flex items-center justify-center gap-2 shadow-sm flex-1 sm:flex-none";
             }
 
+            // 同步設定「學期標籤」與「教師標籤」顏色為動態主題顏色
             document.getElementById('formSemesterBadge').className = `${theme.textPrimaryClass} font-bold transition-colors`;
             document.getElementById('formTeacherBadge').className = `${theme.textPrimaryClass} font-bold transition-colors`;
             document.getElementById('formHeaderIcon').className = `fa-solid fa-pen-to-square ${theme.textPrimaryClass} transition-colors`;
@@ -1023,8 +933,6 @@
         }
 
         function updateGoalHours() {
-            const val = parseFloat(document.getElementById('goalHoursInput').value) || 40;
-            localStorage.setItem('zhu_teacher_goal_hours', val);
             renderAnalytics();
         }
 
@@ -1203,7 +1111,6 @@
             };
 
             records.unshift(record);
-            saveRecordsLocal();
             syncRecordToGAS(record);
 
             render();
@@ -1221,7 +1128,6 @@
         async function deleteRecord(id) {
             if (confirm('確定要刪除這筆服務紀錄嗎？')) {
                 records = records.filter(r => r.id !== id);
-                saveRecordsLocal();
                 syncRecordToGAS({ action: "delete", id: id });
                 render();
                 showToast('紀錄已成功刪除', 'info');
