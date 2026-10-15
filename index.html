@@ -649,11 +649,20 @@
                 }
             }
 
-            if (savedSemester && semesters.includes(savedSemester)) {
-                currentSemester = savedSemester;
-            } else if (semesters.length > 0) {
-                currentSemester = semesters[0];
-            }
+            const autoCalculatedSemester = getCurrentSemesterByDate(); // 自動計算當前學期
+
+// 若清單中沒有自動算出的學期，就自動把當前學期加進學期選單中
+if (!semesters.includes(autoCalculatedSemester)) {
+    semesters.unshift(autoCalculatedSemester);
+    saveSemestersLocal();
+}
+
+// 優先套用上一次選過的學期，否則自動選取算出來的當前學期
+if (savedSemester && semesters.includes(savedSemester)) {
+    currentSemester = savedSemester;
+} else {
+    currentSemester = autoCalculatedSemester;
+}
 
             renderSemesterSelect();
             renderTeacherSelect();
@@ -1603,6 +1612,31 @@
         function escapeHtml(str) {
             return str ? str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : '';
         }
+        // 自動根據今日日期計算台灣學年度與學期 (8月~隔年1月為第一學期，2月~7月為第二學期)
+function getCurrentSemesterByDate() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1; // 1 ~ 12 月
+
+    let rocYear;
+    let semesterTerm;
+
+    if (month >= 8) {
+        // 8月 至 12月：當前民國年 - 1911，第 1 學期
+        rocYear = year - 1911;
+        semesterTerm = "1";
+    } else if (month === 1) {
+        // 1月：上一年的 8月延伸過來，(當前民國年 - 1) - 1911，第 1 學期
+        rocYear = year - 1912;
+        semesterTerm = "1";
+    } else {
+        // 2月 至 7月：(當前民國年 - 1) - 1911，第 2 學期
+        rocYear = year - 1912;
+        semesterTerm = "2";
+    }
+
+    return `${rocYear}-${semesterTerm}`;
+}
     </script>
 </body>
 </html>
