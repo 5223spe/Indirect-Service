@@ -587,11 +587,11 @@
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('serviceDate').value = today;
 
-    // 讀取 URL 參數 ?teacher=
+    // 1. 讀取 URL 網址上的 ?teacher= 參數
     const urlParams = new URLSearchParams(window.location.search);
     const teacherParam = urlParams.get('teacher');
 
-    // 若網址帶有教師名稱，強制寫入 LocalStorage
+    // 2. 若網址有傳入教師姓名，強制寫入 LocalStorage
     if (teacherParam) {
         localStorage.setItem('zhu_current_teacher', teacherParam);
     }
