@@ -202,62 +202,71 @@
             </div>
 
             <div class="space-y-5 sm:space-y-6">
-                <div class="relative">
-                    <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
-                        服務學生姓名 <span class="text-red-500">*</span>
-                    </label>
-                    <div class="flex flex-col sm:flex-row gap-2.5 sm:gap-3 items-start sm:items-center">
-                        <div class="relative w-full sm:w-1/2">
-                            <input type="text" id="studentName" placeholder="請輸入或搜尋姓名" autocomplete="off"
-                                   oninput="filterStudents()" onfocus="filterStudents()"
-                                   class="w-full px-3 py-2 text-sm sm:text-base border border-slate-300 rounded-md text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition">
-                            <div id="studentDropdown" class="hidden absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-md shadow-lg max-h-48 overflow-y-auto divide-y divide-slate-100">
-                            </div>
-                        </div>
-                        <div class="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
-                            <span class="text-xs text-slate-400 mr-1 shrink-0"><i class="fa-solid fa-bolt text-amber-400"></i> 快速選擇：</span>
-                            <div id="studentPillsContainer" class="flex flex-wrap gap-1.5 items-center">
-                            </div>
-                        </div>
-                    </div>
+    <!-- 服務學生姓名 -->
+    <div class="relative">
+        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
+            服務學生姓名 <span class="text-red-500">*</span>
+        </label>
+        <div class="flex flex-col sm:flex-row gap-2.5 sm:gap-3 items-start sm:items-center">
+            <div class="relative w-full sm:w-1/2">
+                <input type="text" id="studentName" placeholder="請輸入或搜尋姓名" autocomplete="off"
+                       oninput="filterStudents()" onfocus="filterStudents()"
+                       class="w-full px-3 py-2 text-sm sm:text-base border border-slate-300 rounded-md text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition">
+                <div id="studentDropdown" class="hidden absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-md shadow-lg max-h-48 overflow-y-auto divide-y divide-slate-100">
                 </div>
-
-                <!-- 服務日期 -->
-<div class="w-full sm:w-1/2">
-    <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
-        服務日期 <span class="text-red-500">*</span>
-    </label>
-    <input type="date" id="serviceDate" required
-           class="w-full max-w-full h-11 px-3 py-2.5 text-xs sm:text-base border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition box-border">
-</div>
-
-<!-- 開始與結束時間：統一 h-11 增加高度且完全等高 -->
-<div class="flex flex-row items-center gap-3 sm:gap-6 w-full">
-    <div class="flex-1 min-w-0">
-        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1 truncate">
-            開始時間 <span class="text-red-500">*</span>
-        </label>
-        <input type="time" id="startTime" required onchange="calculateMinutes()"
-               class="w-full max-w-full h-11 px-1.5 sm:px-2.5 py-2.5 text-xs sm:text-base border border-slate-300 rounded-md text-slate-800 text-center sm:text-left focus:outline-none focus:ring-2 focus:ring-cyan-500 box-border">
-    </div>
-    <div class="flex-1 min-w-0">
-        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1 truncate">
-            結束時間 <span class="text-red-500">*</span>
-        </label>
-        <input type="time" id="endTime" required onchange="calculateMinutes()"
-               class="w-full max-w-full h-11 px-1.5 sm:px-2.5 py-2.5 text-xs sm:text-base border border-slate-300 rounded-md text-slate-800 text-center sm:text-left focus:outline-none focus:ring-2 focus:ring-cyan-500 box-border">
-    </div>
-</div>
             </div>
-
-            <div>
-                <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
-                    總服務時間（分鐘） <span class="text-red-500">*</span>
-                </label>
-                <input type="number" id="durationMinutes" min="1" required placeholder="自動計算或手動輸入"
-                       class="w-full sm:w-1/2 px-3 py-2 text-sm sm:text-base border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition">
+            <div class="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
+                <span class="text-xs text-slate-400 mr-1 shrink-0"><i class="fa-solid fa-bolt text-amber-400"></i> 快速選擇：</span>
+                <div id="studentPillsContainer" class="flex flex-wrap gap-1.5 items-center">
+                </div>
             </div>
+        </div>
+    </div>
 
+    <!-- 服務日期 (與開始時間對齊) -->
+    <div class="flex flex-row items-center gap-3 sm:gap-6 w-full">
+        <div class="flex-1 min-w-0">
+            <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
+                服務日期 <span class="text-red-500">*</span>
+            </label>
+            <input type="date" id="serviceDate" required
+                   class="w-full max-w-full h-11 px-3 py-2.5 text-xs sm:text-base border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition box-border">
+        </div>
+        <!-- 佔位區塊，確保電腦版與時間欄位的左右結構一致 -->
+        <div class="hidden sm:block flex-1 min-w-0"></div>
+    </div>
+
+    <!-- 開始時間與結束時間 -->
+    <div class="flex flex-row items-center gap-3 sm:gap-6 w-full">
+        <div class="flex-1 min-w-0">
+            <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1 truncate">
+                開始時間 <span class="text-red-500">*</span>
+            </label>
+            <input type="time" id="startTime" required onchange="calculateMinutes()"
+                   class="w-full max-w-full h-11 px-1.5 sm:px-2.5 py-2.5 text-xs sm:text-base border border-slate-300 rounded-md text-slate-800 text-center sm:text-left focus:outline-none focus:ring-2 focus:ring-cyan-500 box-border">
+        </div>
+        <div class="flex-1 min-w-0">
+            <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1 truncate">
+                結束時間 <span class="text-red-500">*</span>
+            </label>
+            <input type="time" id="endTime" required onchange="calculateMinutes()"
+                   class="w-full max-w-full h-11 px-1.5 sm:px-2.5 py-2.5 text-xs sm:text-base border border-slate-300 rounded-md text-slate-800 text-center sm:text-left focus:outline-none focus:ring-2 focus:ring-cyan-500 box-border">
+        </div>
+    </div>
+
+    <!-- 總服務時間（分鐘）(與開始時間對齊) -->
+    <div class="flex flex-row items-center gap-3 sm:gap-6 w-full">
+        <div class="flex-1 min-w-0">
+            <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
+                總服務時間（分鐘） <span class="text-red-500">*</span>
+            </label>
+            <input type="number" id="durationMinutes" min="1" required placeholder="自動計算或手動輸入"
+                   class="w-full max-w-full h-11 px-3 py-2.5 text-xs sm:text-base border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition box-border">
+        </div>
+        <!-- 佔位區塊，確保電腦版與時間欄位的左右結構一致 -->
+        <div class="hidden sm:block flex-1 min-w-0"></div>
+    </div>
+</div>
             <hr class="border-slate-100">
 
             <div>
