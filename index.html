@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>教師間接服務項目及相關記錄系統</title>
 
-    <!-- 1. 一般瀏覽器分頁圖示 (Favicon) -->
+    <!-- 1. 一般瀏覽器分頁圖示 (Favicon) - 加 ?v=2 強制電腦清除舊快取 -->
     <link rel="icon" href="icon.png?v=2" type="image/png">
 
     <!-- 2. iOS (iPhone/iPad) 加到主畫面的圖示 (Apple Touch Icon) -->
@@ -19,6 +19,7 @@
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- ExcelJS for Styled Excel Export -->
@@ -674,24 +675,22 @@
         </div>
     </div>
 
-    <!-- 10. 通用詳細資訊 Modal 彈出視窗（新增） -->
-    <div id="viewDetailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <!-- 10. 歷史紀錄檢視細節 Modal 彈出視窗 -->
+    <div id="detailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full p-5 sm:p-6 space-y-4 transform transition-all">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                <h3 id="viewDetailTitle" class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                <h3 id="detailModalTitle" class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
                     <i class="fa-solid fa-circle-info text-sky-800"></i>
                     <span>詳細內容</span>
                 </h3>
-                <button type="button" onclick="closeViewDetailModal()" class="text-slate-400 hover:text-slate-600 transition">
-                    <i class="fa-solid fa-xmark text-lg"></i>
+                <button type="button" onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600 transition p-1">
+                    <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
             </div>
-            
-            <div id="viewDetailContent" class="text-slate-700 text-sm whitespace-pre-wrap break-words max-h-60 overflow-y-auto bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 leading-relaxed">
+            <div id="detailModalContent" class="text-sm text-slate-700 whitespace-pre-line leading-relaxed max-h-60 overflow-y-auto bg-slate-50 p-3.5 rounded-xl border border-slate-100">
             </div>
-
-            <div class="pt-2">
-                <button type="button" onclick="closeViewDetailModal()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-medium py-2 rounded-xl text-sm transition shadow-sm">
+            <div class="flex justify-end pt-2">
+                <button type="button" onclick="closeDetailModal()" class="w-full sm:w-auto px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-xl text-sm transition">
                     關閉
                 </button>
             </div>
@@ -1216,15 +1215,14 @@
             if (focusTargetElement) focusTargetElement.focus();
         }
 
-        /* 檢視通用彈出視窗相關 Function */
-        function openViewDetailModal(title, content) {
-            document.getElementById('viewDetailTitle').querySelector('span').innerText = title;
-            document.getElementById('viewDetailContent').innerText = content;
-            document.getElementById('viewDetailModal').classList.remove('hidden');
+        function openDetailModal(title, content) {
+            document.getElementById('detailModalTitle').innerHTML = `<i class="fa-solid fa-circle-info text-sky-800"></i> <span>${escapeHtml(title)}</span>`;
+            document.getElementById('detailModalContent').innerText = content;
+            document.getElementById('detailModal').classList.remove('hidden');
         }
 
-        function closeViewDetailModal() {
-            document.getElementById('viewDetailModal').classList.add('hidden');
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.add('hidden');
         }
 
         function updateGoalHours() {
@@ -1574,7 +1572,7 @@
                     const formattedTargetsHTML = (r.targets || []).map(t => {
                         const fullText = escapeHtml(t);
                         const displayText = t.length > 4 ? escapeHtml(t.substring(0, 4)) + '...' : fullText;
-                        return `<span class="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-md font-medium cursor-pointer inline-block whitespace-nowrap" title="${fullText}" onclick="openViewDetailModal('完整服務對象', '${fullText}')">${displayText}</span>`;
+                        return `<span class="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-md font-medium cursor-pointer inline-block whitespace-nowrap" title="${fullText}" onclick="openDetailModal('服務對象', '${fullText}')">${displayText}</span>`;
                     }).join('');
 
                     // 間接服務內容（最多呈現 2 項）
@@ -1584,13 +1582,12 @@
                         const visibleContents = contents.slice(0, 2);
                         const extraCount = contents.length - 2;
                         const fullContentListStr = escapeHtml(contents.join(', '));
-                        const formattedListForModal = escapeHtml(contents.join('\n'));
                         
                         formattedContentsHTML = visibleContents.map(c => 
                             `<span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-md font-medium border border-slate-200/60 inline-block whitespace-nowrap">${escapeHtml(c)}</span>`
                         ).join('');
                         
-                        formattedContentsHTML += `<span class="bg-sky-50 text-sky-700 text-xs px-2 py-1 rounded-md font-medium border border-sky-100 cursor-pointer inline-block whitespace-nowrap" title="${fullContentListStr}" onclick="openViewDetailModal('完整間接服務內容', '${formattedListForModal}')">+${extraCount}種...</span>`;
+                        formattedContentsHTML += `<span class="bg-sky-50 text-sky-700 text-xs px-2 py-1 rounded-md font-medium border border-sky-100 cursor-pointer inline-block whitespace-nowrap" title="${fullContentListStr}" onclick="openDetailModal('完整服務內容', '${r.contents ? r.contents.join('\n') : ''}')">+${extraCount}種...</span>`;
                     } else {
                         formattedContentsHTML = contents.map(c => 
                             `<span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-md font-medium border border-slate-200/60 inline-block whitespace-nowrap">${escapeHtml(c)}</span>`
@@ -1602,6 +1599,7 @@
                     const fullNotes = escapeHtml(rawNotes);
                     const maxNotesLength = 2;
                     const displayNotes = rawNotes.length > maxNotesLength ? escapeHtml(rawNotes.substring(0, maxNotesLength)) + '...' : (fullNotes || '-');
+                    const escapedNotesForJs = rawNotes.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n');
 
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-slate-50/60 transition";
@@ -1637,7 +1635,7 @@
                                 ${formattedContentsHTML}
                             </div>
                         </td>
-                        <td class="p-3 max-w-xs text-slate-500 text-xs align-top cursor-pointer truncate" title="${fullNotes}" onclick="if('${fullNotes}') openViewDetailModal('完整備註內容', '${fullNotes}')">
+                        <td class="p-3 max-w-xs text-slate-500 text-xs align-top cursor-pointer truncate" title="${fullNotes}" onclick="if('${fullNotes}') openDetailModal('完整備註內容', '${escapedNotesForJs}')">
                             ${displayNotes}
                         </td>
                         <td class="p-3 whitespace-nowrap text-center align-top">
