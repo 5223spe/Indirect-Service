@@ -357,7 +357,7 @@
                     <i class="fa-solid fa-check"></i>
                     <span>提交紀錄</span>
                 </button>
-                <button type="button" onclick="cancelEdit()" class="text-slate-500 hover:text-slate-700 text-xs sm:text-sm font-medium px-3 py-2">
+                <button type="button" onclick="resetForm()" class="text-slate-500 hover:text-slate-700 text-xs sm:text-sm font-medium px-3 py-2">
                     清除內容
                 </button>
             </div>
@@ -571,7 +571,7 @@
     </div>
 
     <script>
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwz6Auiz6NwXXTKaxHN_KHvYoXHnyIcHF6m6rW1UHII0zNAHXVa3rPMqbKlZp-mRwkHdg/exec";
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyFg296Y3zQEujFizAQctMB4HQhes0iB6u_q3o2T1WKGeNbfie7LUo6z1Em6rZuFovA/exec";
 
         const defaultSemesters = [];
         let semesters = [];
@@ -589,9 +589,6 @@
         let contentChartInstance = null;
         let trendChartInstance = null;
         let focusTargetElement = null;
-
-        // [步驟 1] 新增編輯追蹤變數
-        let editingRecordId = null;
 
         function cleanDateStr(dateStr) {
             if (!dateStr) return '';
@@ -1204,137 +1201,77 @@
             }
         }
 
-        // [步驟 4] 修改表單提交事件，支援「新增」與「編輯更新」兩種模式
         document.getElementById('serviceForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+    e.preventDefault();
 
-            if (!currentTeacher) {
-                showAlertModal(['請先在頂部選單選擇或建立具體的「教師姓名」後再填寫紀錄！']);
-                return;
-            }
+    if (!currentTeacher) {
+        showAlertModal(['請先在頂部選單選擇或建立具體的「教師姓名」後再填寫紀錄！']);
+        return;
+    }
 
-            const studentNameInput = document.getElementById('studentName');
-            const studentName = studentNameInput.value.trim();
-            const serviceDate = document.getElementById('serviceDate').value;
-            const startTime = document.getElementById('startTime').value;
-            const endTime = document.getElementById('endTime').value;
-            const durationMinutes = document.getElementById('durationMinutes').value;
+    const studentNameInput = document.getElementById('studentName');
+    const studentName = studentNameInput.value.trim();
+    const serviceDate = document.getElementById('serviceDate').value;
+    const startTime = document.getElementById('startTime').value;
+    const endTime = document.getElementById('endTime').value;
+    const durationMinutes = document.getElementById('durationMinutes').value;
 
-            const targets = Array.from(document.querySelectorAll('input[name="target"]:checked')).map(cb => cb.value);
-            const contents = Array.from(document.querySelectorAll('input[name="content"]:checked')).map(cb => cb.value);
+    const targets = Array.from(document.querySelectorAll('input[name="target"]:checked')).map(cb => cb.value);
+    const contents = Array.from(document.querySelectorAll('input[name="content"]:checked')).map(cb => cb.value);
 
-            const missingItems = [];
-            let targetFocusEl = null;
+    const missingItems = [];
+    let targetFocusEl = null;
 
-            if (!studentName) { missingItems.push('請輸入或選擇「服務學生姓名」'); if (!targetFocusEl) targetFocusEl = studentNameInput; }
-            if (!serviceDate) { missingItems.push('請選擇「服務日期」'); if (!targetFocusEl) targetFocusEl = document.getElementById('serviceDate'); }
-            if (!startTime || !endTime || !durationMinutes || parseInt(durationMinutes) <= 0) {
-                missingItems.push('請設定正確的「服務時間與分鐘數」'); if (!targetFocusEl) targetFocusEl = document.getElementById('startTime');
-            }
-            if (targets.length === 0) missingItems.push('請至少勾選一項「服務對象」');
-            if (contents.length === 0) missingItems.push('請至少勾選一項「間接服務內容」');
+    if (!studentName) { missingItems.push('請輸入或選擇「服務學生姓名」'); if (!targetFocusEl) targetFocusEl = studentNameInput; }
+    if (!serviceDate) { missingItems.push('請選擇「服務日期」'); if (!targetFocusEl) targetFocusEl = document.getElementById('serviceDate'); }
+    if (!startTime || !endTime || !durationMinutes || parseInt(durationMinutes) <= 0) {
+        missingItems.push('請設定正確的「服務時間與分鐘數」'); if (!targetFocusEl) targetFocusEl = document.getElementById('startTime');
+    }
+    if (targets.length === 0) missingItems.push('請至少勾選一項「服務對象」');
+    if (contents.length === 0) missingItems.push('請至少勾選一項「間接服務內容」');
 
-            if (missingItems.length > 0) {
-                showAlertModal(missingItems, targetFocusEl);
-                return;
-            }
+    if (missingItems.length > 0) {
+        showAlertModal(missingItems, targetFocusEl);
+        return;
+    }
 
-            // 1. 如果是新學生，將其加入該教師的名單並同步至雲端
-            const teacherStudents = getCurrentTeacherStudents();
-            if (studentName && !teacherStudents.includes(studentName)) {
-                teacherStudents.push(studentName);
-                saveStudentMapLocal(); // 儲存至本地
-                syncConfigToGAS();     // 同步學生名單設定至雲端 GAS
-            }
+    // 1. 如果是新學生，將其加入該教師的名單並同步至雲端
+    const teacherStudents = getCurrentTeacherStudents();
+    if (studentName && !teacherStudents.includes(studentName)) {
+        teacherStudents.push(studentName);
+        saveStudentMapLocal(); // 儲存至本地
+        syncConfigToGAS();     // 關鍵修正：同時同步學生名單設定至雲端 GAS
+    }
 
-            if (editingRecordId) {
-                // --- 編輯模式：更新現有紀錄 ---
-                const index = records.findIndex(r => r.id === editingRecordId);
-                if (index !== -1) {
-                    records[index] = {
-                        ...records[index],
-                        semester: currentSemester,
-                        teacherName: currentTeacher,
-                        studentName: studentName,
-                        serviceDate: serviceDate,
-                        startTime: startTime,
-                        endTime: endTime,
-                        durationMinutes: parseInt(durationMinutes) || 0,
-                        targets: targets,
-                        contents: contents,
-                        notes: document.getElementById('notes').value.trim(),
-                        updatedAt: new Date().toLocaleString('zh-TW')
-                    };
+    const record = {
+        id: Date.now(),
+        semester: currentSemester,
+        teacherName: currentTeacher,
+        studentName: studentName,
+        serviceDate: serviceDate,
+        startTime: startTime,
+        endTime: endTime,
+        durationMinutes: parseInt(durationMinutes) || 0,
+        targets: targets,
+        contents: contents,
+        notes: document.getElementById('notes').value.trim(),
+        createdAt: new Date().toLocaleString('zh-TW')
+    };
 
-                    saveRecordsLocal();
-                    syncRecordToGAS({ action: "update", ...records[index] });
-                    showToast(`紀錄更新成功！`, 'success');
-                }
-            } else {
-                // --- 新增模式：全新紀錄 ---
-                const record = {
-                    id: Date.now(),
-                    semester: currentSemester,
-                    teacherName: currentTeacher,
-                    studentName: studentName,
-                    serviceDate: serviceDate,
-                    startTime: startTime,
-                    endTime: endTime,
-                    durationMinutes: parseInt(durationMinutes) || 0,
-                    targets: targets,
-                    contents: contents,
-                    notes: document.getElementById('notes').value.trim(),
-                    createdAt: new Date().toLocaleString('zh-TW')
-                };
+    records.unshift(record);
+    saveRecordsLocal();
+    syncRecordToGAS(record); // 同步紀錄至雲端 GAS
 
-                records.unshift(record);
-                saveRecordsLocal();
-                syncRecordToGAS(record);
-                showToast(`[${currentSemester}] 服務紀錄新增成功！`, 'success');
-            }
-
-            render();
-            cancelEdit();
-        });
+    render();
+    resetForm();
+    showToast(`[${currentSemester}] 服務紀錄新增成功！`, 'success');
+});
 
         function resetForm() {
             document.getElementById('serviceForm').reset();
             document.getElementById('serviceDate').value = new Date().toISOString().split('T')[0];
             document.querySelectorAll('input[name="target"]').forEach(cb => cb.checked = (cb.value === '學生本人'));
             document.getElementById('studentDropdown').classList.add('hidden');
-        }
-
-        // [步驟 3] 新增 editRecord 與 cancelEdit 函式
-        function editRecord(id) {
-            const record = records.find(r => r.id === id);
-            if (!record) return;
-
-            editingRecordId = id;
-
-            document.getElementById('studentName').value = record.studentName || '';
-            document.getElementById('serviceDate').value = record.serviceDate || '';
-            document.getElementById('startTime').value = record.startTime || '';
-            document.getElementById('endTime').value = record.endTime || '';
-            document.getElementById('durationMinutes').value = record.durationMinutes || '';
-            document.getElementById('notes').value = record.notes || '';
-
-            document.querySelectorAll('input[name="target"]').forEach(cb => {
-                cb.checked = record.targets ? record.targets.includes(cb.value) : false;
-            });
-
-            document.querySelectorAll('input[name="content"]').forEach(cb => {
-                cb.checked = record.contents ? record.contents.includes(cb.value) : false;
-            });
-
-            document.getElementById('submitBtn').innerHTML = `<i class="fa-solid fa-floppy-disk"></i><span>儲存修改</span>`;
-            document.getElementById('serviceForm').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        // [步驟 5] 搭配取消/清空編輯狀態
-        function cancelEdit() {
-            editingRecordId = null;
-            document.getElementById('submitBtn').innerHTML = `<i class="fa-solid fa-check"></i><span>提交紀錄</span>`;
-            resetForm();
         }
 
         async function deleteRecord(id) {
@@ -1366,7 +1303,6 @@
             renderAnalytics();
         }
 
-        // [步驟 2] 在表格欄位加上編輯按鈕
         function renderTable() {
             const theme = getCurrentTheme();
             const tableBody = document.getElementById('recordsTableBody');
@@ -1433,9 +1369,6 @@
                             ${escapeHtml(r.notes) || '-'}
                         </td>
                         <td class="p-3 whitespace-nowrap text-center align-top">
-                            <button onclick="editRecord(${r.id})" class="text-slate-400 hover:text-cyan-600 p-1 mr-1 rounded transition" title="編輯紀錄">
-                                <i class="fa-solid fa-pen-to-square text-sm"></i>
-                            </button>
                             <button onclick="deleteRecord(${r.id})" class="text-slate-300 hover:text-red-500 p-1 rounded transition" title="刪除紀錄">
                                 <i class="fa-regular fa-trash-can text-sm"></i>
                             </button>
