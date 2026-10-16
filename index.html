@@ -20,6 +20,11 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教師間接服務項目及相關記錄系統</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- ExcelJS for Styled Excel Export -->
@@ -675,28 +680,6 @@
         </div>
     </div>
 
-    <!-- 10. 歷史紀錄檢視細節 Modal 彈出視窗 -->
-    <div id="detailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full p-5 sm:p-6 space-y-4 transform transition-all">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                <h3 id="detailModalTitle" class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
-                    <i class="fa-solid fa-circle-info text-sky-800"></i>
-                    <span>詳細內容</span>
-                </h3>
-                <button type="button" onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600 transition p-1">
-                    <i class="fa-solid fa-xmark text-xl"></i>
-                </button>
-            </div>
-            <div id="detailModalContent" class="text-sm text-slate-700 whitespace-pre-line leading-relaxed max-h-60 overflow-y-auto bg-slate-50 p-3.5 rounded-xl border border-slate-100">
-            </div>
-            <div class="flex justify-end pt-2">
-                <button type="button" onclick="closeDetailModal()" class="w-full sm:w-auto px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-xl text-sm transition">
-                    關閉
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-5 right-5 left-5 sm:left-auto bg-slate-900 text-white px-4 py-3 rounded-md shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 flex items-center justify-center sm:justify-start space-x-2 text-xs sm:text-sm z-50">
         <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
@@ -1215,16 +1198,6 @@
             if (focusTargetElement) focusTargetElement.focus();
         }
 
-        function openDetailModal(title, content) {
-            document.getElementById('detailModalTitle').innerHTML = `<i class="fa-solid fa-circle-info text-sky-800"></i> <span>${escapeHtml(title)}</span>`;
-            document.getElementById('detailModalContent').innerText = content;
-            document.getElementById('detailModal').classList.remove('hidden');
-        }
-
-        function closeDetailModal() {
-            document.getElementById('detailModal').classList.add('hidden');
-        }
-
         function updateGoalHours() {
             const val = parseFloat(document.getElementById('goalHoursInput').value) || 40;
             localStorage.setItem('zhu_teacher_goal_hours', val);
@@ -1572,7 +1545,7 @@
                     const formattedTargetsHTML = (r.targets || []).map(t => {
                         const fullText = escapeHtml(t);
                         const displayText = t.length > 4 ? escapeHtml(t.substring(0, 4)) + '...' : fullText;
-                        return `<span class="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-md font-medium cursor-pointer inline-block whitespace-nowrap" title="${fullText}" onclick="openDetailModal('服務對象', '${fullText}')">${displayText}</span>`;
+                        return `<span class="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-md font-medium cursor-pointer inline-block whitespace-nowrap" title="${fullText}" onclick="alert('${fullText}')">${displayText}</span>`;
                     }).join('');
 
                     // 間接服務內容（最多呈現 2 項）
@@ -1587,7 +1560,7 @@
                             `<span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-md font-medium border border-slate-200/60 inline-block whitespace-nowrap">${escapeHtml(c)}</span>`
                         ).join('');
                         
-                        formattedContentsHTML += `<span class="bg-sky-50 text-sky-700 text-xs px-2 py-1 rounded-md font-medium border border-sky-100 cursor-pointer inline-block whitespace-nowrap" title="${fullContentListStr}" onclick="openDetailModal('完整服務內容', '${r.contents ? r.contents.join('\n') : ''}')">+${extraCount}種...</span>`;
+                        formattedContentsHTML += `<span class="bg-sky-50 text-sky-700 text-xs px-2 py-1 rounded-md font-medium border border-sky-100 cursor-pointer inline-block whitespace-nowrap" title="${fullContentListStr}" onclick="alert('完整服務內容：\\n${fullContentListStr}')">+${extraCount}種...</span>`;
                     } else {
                         formattedContentsHTML = contents.map(c => 
                             `<span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-md font-medium border border-slate-200/60 inline-block whitespace-nowrap">${escapeHtml(c)}</span>`
@@ -1599,7 +1572,6 @@
                     const fullNotes = escapeHtml(rawNotes);
                     const maxNotesLength = 2;
                     const displayNotes = rawNotes.length > maxNotesLength ? escapeHtml(rawNotes.substring(0, maxNotesLength)) + '...' : (fullNotes || '-');
-                    const escapedNotesForJs = rawNotes.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n');
 
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-slate-50/60 transition";
@@ -1635,7 +1607,7 @@
                                 ${formattedContentsHTML}
                             </div>
                         </td>
-                        <td class="p-3 max-w-xs text-slate-500 text-xs align-top cursor-pointer truncate" title="${fullNotes}" onclick="if('${fullNotes}') openDetailModal('完整備註內容', '${escapedNotesForJs}')">
+                        <td class="p-3 max-w-xs text-slate-500 text-xs align-top cursor-pointer truncate" title="${fullNotes}" onclick="if('${fullNotes}') alert('完整備註：\\n${fullNotes}')">
                             ${displayNotes}
                         </td>
                         <td class="p-3 whitespace-nowrap text-center align-top">
