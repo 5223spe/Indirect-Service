@@ -403,7 +403,7 @@
                 </div>
             </div>
 
-            <!-- [需求 4] 限制最多呈現約10筆高度，超出時自動出現滑動條 -->
+            <!-- 超出 10 筆滑動容器 -->
             <div class="overflow-x-auto overflow-y-auto max-h-[520px] -mx-4 sm:mx-0 px-4 sm:px-0 border border-slate-100 rounded-lg">
                 <table class="w-full text-left border-collapse min-w-[700px]">
                     <thead class="sticky top-0 bg-slate-50 z-10 shadow-sm">
@@ -562,11 +562,11 @@
         </div>
     </div>
 
-    <!-- 9. [需求 1 修正] 編輯紀錄專用 Modal 彈出視窗（修正頂部切除與圓角卡角問題） -->
+    <!-- 9. 編輯紀錄專用 Modal 彈出視窗 -->
     <div id="editRecordModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 sm:p-6">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden transition-all transform">
             
-            <!-- Modal 固定標題頁首 -->
+            <!-- Modal 固定頁首 -->
             <div class="flex justify-between items-center border-b border-slate-100 px-5 sm:px-6 py-4 bg-slate-50/50 shrink-0">
                 <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
                     <i class="fa-solid fa-pen-to-square text-sky-800"></i>
@@ -577,7 +577,7 @@
                 </button>
             </div>
 
-            <!-- Modal 可滑動的內容主體區 -->
+            <!-- Modal 表單主體區 -->
             <div class="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1">
                 <form id="editRecordForm" class="space-y-4">
                     <!-- 服務學生姓名 -->
@@ -666,7 +666,7 @@
                 </form>
             </div>
 
-            <!-- Modal 固定頁尾按鈕區 -->
+            <!-- Modal 固定頁尾 -->
             <div class="flex justify-end gap-3 px-5 sm:px-6 py-4 bg-slate-50/50 border-t border-slate-100 shrink-0">
                 <button type="button" onclick="closeEditModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md text-sm font-medium transition">
                     取消
@@ -1501,7 +1501,7 @@
             renderAnalytics();
         }
 
-        // [需求 2 & 需求 3] 渲染表格，加入字數 (4字) 與項目數 (3種) 限制
+        // [需求 1, 2, 3] 渲染歷史紀錄表格
         function renderTable() {
             const theme = getCurrentTheme();
             const tableBody = document.getElementById('recordsTableBody');
@@ -1520,6 +1520,18 @@
                 return matchesQuery && matchesStudent;
             });
 
+            // [需求 3] 按照晤談先後順序進行排序（先比日期，日期相同再比開始時間）
+            finalFiltered.sort((a, b) => {
+                const dateA = a.serviceDate || '';
+                const dateB = b.serviceDate || '';
+                if (dateA !== dateB) {
+                    return dateB.localeCompare(dateA); // 日期較新的排前面，若要舊到新可改 localeCompare(dateB)
+                }
+                const timeA = a.startTime || '';
+                const timeB = b.startTime || '';
+                return timeB.localeCompare(timeA); // 開始時間較新的排前面
+            });
+
             tableBody.innerHTML = '';
 
             if (finalFiltered.length === 0) {
@@ -1530,29 +1542,29 @@
                     const isTeacher2 = teachers.indexOf(r.teacherName) === 1;
                     const badgeClass = isTeacher2 ? "bg-custom-t2-light text-custom-t2 border-blue-200" : "bg-cyan-50 text-cyan-700 border-cyan-100";
 
-                    // [需求 2] 處理服務對象格式化（最多顯示4字，超出以...呈現，點擊/浮動顯示完整名稱）
+                    // [需求 1] 服務對象：四個字且強制同一行 (whitespace-nowrap)，超過4字以...呈現
                     const formattedTargetsHTML = (r.targets || []).map(t => {
                         const fullText = escapeHtml(t);
                         const displayText = t.length > 4 ? escapeHtml(t.substring(0, 4)) + '...' : fullText;
-                        return `<span class="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-md font-medium cursor-pointer" title="${fullText}" onclick="alert('${fullText}')">${displayText}</span>`;
+                        return `<span class="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-md font-medium cursor-pointer inline-block whitespace-nowrap" title="${fullText}" onclick="alert('${fullText}')">${displayText}</span>`;
                     }).join('');
 
-                    // [需求 3] 處理間接服務內容格式化（最多顯示 3 種，多餘以 ... 表示）
+                    // [需求 2] 間接服務內容：最多呈現 2 項，多的以 +N種... 呈現
                     let formattedContentsHTML = '';
                     const contents = r.contents || [];
-                    if (contents.length > 3) {
-                        const visibleContents = contents.slice(0, 3);
-                        const extraCount = contents.length - 3;
+                    if (contents.length > 2) {
+                        const visibleContents = contents.slice(0, 2);
+                        const extraCount = contents.length - 2;
                         const fullContentListStr = escapeHtml(contents.join(', '));
                         
                         formattedContentsHTML = visibleContents.map(c => 
-                            `<span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-md font-medium border border-slate-200/60">${escapeHtml(c)}</span>`
+                            `<span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-md font-medium border border-slate-200/60 inline-block whitespace-nowrap">${escapeHtml(c)}</span>`
                         ).join('');
                         
-                        formattedContentsHTML += `<span class="bg-sky-50 text-sky-700 text-xs px-2 py-1 rounded-md font-medium border border-sky-100 cursor-pointer" title="${fullContentListStr}" onclick="alert('完整服務內容：\\n${fullContentListStr}')">+${extraCount}種...</span>`;
+                        formattedContentsHTML += `<span class="bg-sky-50 text-sky-700 text-xs px-2 py-1 rounded-md font-medium border border-sky-100 cursor-pointer inline-block whitespace-nowrap" title="${fullContentListStr}" onclick="alert('完整服務內容：\\n${fullContentListStr}')">+${extraCount}種...</span>`;
                     } else {
                         formattedContentsHTML = contents.map(c => 
-                            `<span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-md font-medium border border-slate-200/60">${escapeHtml(c)}</span>`
+                            `<span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-md font-medium border border-slate-200/60 inline-block whitespace-nowrap">${escapeHtml(c)}</span>`
                         ).join('');
                     }
 
@@ -1581,12 +1593,12 @@
                             </div>
                         </td>
                         <td class="p-3 max-w-xs align-top">
-                            <div class="flex flex-wrap gap-1.5">
+                            <div class="flex flex-wrap gap-1.5 items-center">
                                 ${formattedTargetsHTML}
                             </div>
                         </td>
                         <td class="p-3 max-w-xs align-top">
-                            <div class="flex flex-wrap gap-1.5">
+                            <div class="flex flex-wrap gap-1.5 items-center">
                                 ${formattedContentsHTML}
                             </div>
                         </td>
