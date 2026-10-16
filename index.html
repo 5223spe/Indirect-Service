@@ -1501,7 +1501,6 @@
             renderAnalytics();
         }
 
-        // [需求 1, 2, 3] 渲染歷史紀錄表格
         function renderTable() {
             const theme = getCurrentTheme();
             const tableBody = document.getElementById('recordsTableBody');
@@ -1520,16 +1519,16 @@
                 return matchesQuery && matchesStudent;
             });
 
-            // [需求 3] 按照晤談先後順序進行排序（先比日期，日期相同再比開始時間）
+            // 按晤談先後順序排序（日期與時間）
             finalFiltered.sort((a, b) => {
                 const dateA = a.serviceDate || '';
                 const dateB = b.serviceDate || '';
                 if (dateA !== dateB) {
-                    return dateB.localeCompare(dateA); // 日期較新的排前面，若要舊到新可改 localeCompare(dateB)
+                    return dateB.localeCompare(dateA);
                 }
                 const timeA = a.startTime || '';
                 const timeB = b.startTime || '';
-                return timeB.localeCompare(timeA); // 開始時間較新的排前面
+                return timeB.localeCompare(timeA);
             });
 
             tableBody.innerHTML = '';
@@ -1542,14 +1541,14 @@
                     const isTeacher2 = teachers.indexOf(r.teacherName) === 1;
                     const badgeClass = isTeacher2 ? "bg-custom-t2-light text-custom-t2 border-blue-200" : "bg-cyan-50 text-cyan-700 border-cyan-100";
 
-                    // [需求 1] 服務對象：四個字且強制同一行 (whitespace-nowrap)，超過4字以...呈現
+                    // 服務對象（最多呈現4字）
                     const formattedTargetsHTML = (r.targets || []).map(t => {
                         const fullText = escapeHtml(t);
                         const displayText = t.length > 4 ? escapeHtml(t.substring(0, 4)) + '...' : fullText;
                         return `<span class="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-md font-medium cursor-pointer inline-block whitespace-nowrap" title="${fullText}" onclick="alert('${fullText}')">${displayText}</span>`;
                     }).join('');
 
-                    // [需求 2] 間接服務內容：最多呈現 2 項，多的以 +N種... 呈現
+                    // 間接服務內容（最多呈現 2 項）
                     let formattedContentsHTML = '';
                     const contents = r.contents || [];
                     if (contents.length > 2) {
@@ -1567,6 +1566,12 @@
                             `<span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-md font-medium border border-slate-200/60 inline-block whitespace-nowrap">${escapeHtml(c)}</span>`
                         ).join('');
                     }
+
+                    // 備註欄位處理：最多呈現 2 個字，超出部分顯示 ...
+                    const rawNotes = r.notes || '';
+                    const fullNotes = escapeHtml(rawNotes);
+                    const maxNotesLength = 2;
+                    const displayNotes = rawNotes.length > maxNotesLength ? escapeHtml(rawNotes.substring(0, maxNotesLength)) + '...' : (fullNotes || '-');
 
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-slate-50/60 transition";
@@ -1602,8 +1607,8 @@
                                 ${formattedContentsHTML}
                             </div>
                         </td>
-                        <td class="p-3 max-w-xs text-slate-500 text-xs truncate align-top" title="${escapeHtml(r.notes)}">
-                            ${escapeHtml(r.notes) || '-'}
+                        <td class="p-3 max-w-xs text-slate-500 text-xs align-top cursor-pointer truncate" title="${fullNotes}" onclick="if('${fullNotes}') alert('完整備註：\\n${fullNotes}')">
+                            ${displayNotes}
                         </td>
                         <td class="p-3 whitespace-nowrap text-center align-top">
                             <button onclick="openEditModal(${r.id})" class="text-slate-400 hover:text-cyan-600 p-1 mr-1 rounded transition" title="編輯紀錄">
