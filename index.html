@@ -6,23 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>教師間接服務項目及相關記錄系統</title>
 
-    <!-- 1. 一般瀏覽器分頁圖示 (Favicon) - 加 ?v=2 強制電腦清除舊快取 -->
+    <!-- 一般瀏覽器分頁圖示與 Web App 設定 -->
     <link rel="icon" href="icon.png?v=2" type="image/png">
-
-    <!-- 2. iOS (iPhone/iPad) 加到主畫面的圖示 (Apple Touch Icon) -->
     <link rel="apple-touch-icon" href="icon.png?v=2">
-
-    <!-- 3. Android / Chrome 加到桌面與 Web App 圖示 -->
     <link rel="shortcut icon" href="icon.png?v=2">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="間接服務">
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>教師間接服務項目及相關記錄系統</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
@@ -33,20 +23,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <!-- Chart.js for Visual Statistics -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
         body {
             font-family: 'Noto Sans TC', sans-serif;
             background-color: #f8fafc;
         }
-        .bg-custom-t1 { background-color: #0c4a6e; }
-        .text-custom-t1 { color: #0c4a6e; }
-
-        .bg-custom-t2 { background-color: #448aa6; }
-        .bg-custom-t2-hover:hover { background-color: #2d7593; }
-        .text-custom-t2 { color: #448aa6; }
-        .border-custom-t2 { border-color: #448aa6; }
-        .bg-custom-t2-light { background-color: #edf6f9; }
 
         /* 防 iOS input 寬度爆表與灰框溢出修正 */
         input[type="date"], input[type="time"] {
@@ -57,7 +40,7 @@
             max-width: 100% !important;
         }
 
-        /* 手機響應式專用優化（僅影響 640px 以下手機螢幕） */
+        /* 手機響應式專用優化 */
         @media (max-width: 639px) {
             body {
                 padding-top: 1rem !important;
@@ -122,7 +105,6 @@
             <h1 class="text-xl sm:text-3xl font-bold text-slate-900 tracking-tight mb-2">
                 [<span id="headerSemesterTitle" class="text-sky-800">114-1</span>] <span id="headerTeacherName">教師</span> 間接服務紀錄表
             </h1>
-            <!-- 手機版隱藏說明文字 -->
             <p class="text-slate-500 text-xs sm:text-sm hidden sm:block">
                 請填寫間接服務紀錄。系統支援跨學期切換、多位教師紀錄統計與匯出標準 Excel 報表。
             </p>
@@ -202,71 +184,70 @@
             </div>
 
             <div class="space-y-5 sm:space-y-6">
-    <!-- 服務學生姓名 -->
-    <div class="relative">
-        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
-            服務學生姓名 <span class="text-red-500">*</span>
-        </label>
-        <div class="flex flex-col sm:flex-row gap-2.5 sm:gap-3 items-start sm:items-center">
-            <div class="relative w-full sm:w-1/2">
-                <input type="text" id="studentName" placeholder="請輸入或搜尋姓名" autocomplete="off"
-                       oninput="filterStudents()" onfocus="filterStudents()"
-                       class="w-full px-3 py-2 text-sm sm:text-base border border-slate-300 rounded-md text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition">
-                <div id="studentDropdown" class="hidden absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-md shadow-lg max-h-48 overflow-y-auto divide-y divide-slate-100">
+                <!-- 服務學生姓名 -->
+                <div class="relative">
+                    <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
+                        服務學生姓名 <span class="text-red-500">*</span>
+                    </label>
+                    <div class="flex flex-col sm:flex-row gap-2.5 sm:gap-3 items-start sm:items-center">
+                        <div class="relative w-full sm:w-1/2">
+                            <input type="text" id="studentName" placeholder="請輸入或搜尋姓名" autocomplete="off"
+                                   oninput="filterStudents()" onfocus="filterStudents()"
+                                   class="w-full px-3 py-2 text-sm sm:text-base border border-slate-300 rounded-md text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition">
+                            <div id="studentDropdown" class="hidden absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-md shadow-lg max-h-48 overflow-y-auto divide-y divide-slate-100">
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
+                            <span class="text-xs text-slate-400 mr-1 shrink-0"><i class="fa-solid fa-bolt text-amber-400"></i> 快速選擇：</span>
+                            <div id="studentPillsContainer" class="flex flex-wrap gap-1.5 items-center">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 服務日期 -->
+                <div class="flex flex-row items-center gap-3 sm:gap-6 w-full">
+                    <div class="flex-1 min-w-0">
+                        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
+                            服務日期 <span class="text-red-500">*</span>
+                        </label>
+                        <input type="date" id="serviceDate" required
+                               class="w-full max-w-full h-11 px-3 py-2.5 text-xs sm:text-base border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition box-border">
+                    </div>
+                    <div class="hidden sm:block flex-1 min-w-0"></div>
+                </div>
+
+                <!-- 開始時間與結束時間 -->
+                <div class="flex flex-row items-center gap-3 sm:gap-6 w-full">
+                    <div class="flex-1 min-w-0">
+                        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1 truncate">
+                            開始時間 <span class="text-red-500">*</span>
+                        </label>
+                        <input type="time" id="startTime" required onchange="calculateMinutes()"
+                               class="w-full max-w-full h-11 px-1.5 sm:px-2.5 py-2.5 text-xs sm:text-base border border-slate-300 rounded-md text-slate-800 text-center sm:text-left focus:outline-none focus:ring-2 focus:ring-cyan-500 box-border">
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1 truncate">
+                            結束時間 <span class="text-red-500">*</span>
+                        </label>
+                        <input type="time" id="endTime" required onchange="calculateMinutes()"
+                               class="w-full max-w-full h-11 px-1.5 sm:px-2.5 py-2.5 text-xs sm:text-base border border-slate-300 rounded-md text-slate-800 text-center sm:text-left focus:outline-none focus:ring-2 focus:ring-cyan-500 box-border">
+                    </div>
+                </div>
+
+                <!-- 總服務時間（分鐘） -->
+                <div class="flex flex-row items-center gap-3 sm:gap-6 w-full">
+                    <div class="flex-1 min-w-0">
+                        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
+                            總服務時間（分鐘） <span class="text-red-500">*</span>
+                        </label>
+                        <input type="number" id="durationMinutes" min="1" required placeholder="自動計算或手動輸入"
+                               class="w-full max-w-full h-11 px-3 py-2.5 text-xs sm:text-base border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition box-border">
+                    </div>
+                    <div class="hidden sm:block flex-1 min-w-0"></div>
                 </div>
             </div>
-            <div class="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
-                <span class="text-xs text-slate-400 mr-1 shrink-0"><i class="fa-solid fa-bolt text-amber-400"></i> 快速選擇：</span>
-                <div id="studentPillsContainer" class="flex flex-wrap gap-1.5 items-center">
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- 服務日期 (與開始時間對齊) -->
-    <div class="flex flex-row items-center gap-3 sm:gap-6 w-full">
-        <div class="flex-1 min-w-0">
-            <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
-                服務日期 <span class="text-red-500">*</span>
-            </label>
-            <input type="date" id="serviceDate" required
-                   class="w-full max-w-full h-11 px-3 py-2.5 text-xs sm:text-base border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition box-border">
-        </div>
-        <!-- 佔位區塊，確保電腦版與時間欄位的左右結構一致 -->
-        <div class="hidden sm:block flex-1 min-w-0"></div>
-    </div>
-
-    <!-- 開始時間與結束時間 -->
-    <div class="flex flex-row items-center gap-3 sm:gap-6 w-full">
-        <div class="flex-1 min-w-0">
-            <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1 truncate">
-                開始時間 <span class="text-red-500">*</span>
-            </label>
-            <input type="time" id="startTime" required onchange="calculateMinutes()"
-                   class="w-full max-w-full h-11 px-1.5 sm:px-2.5 py-2.5 text-xs sm:text-base border border-slate-300 rounded-md text-slate-800 text-center sm:text-left focus:outline-none focus:ring-2 focus:ring-cyan-500 box-border">
-        </div>
-        <div class="flex-1 min-w-0">
-            <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1 truncate">
-                結束時間 <span class="text-red-500">*</span>
-            </label>
-            <input type="time" id="endTime" required onchange="calculateMinutes()"
-                   class="w-full max-w-full h-11 px-1.5 sm:px-2.5 py-2.5 text-xs sm:text-base border border-slate-300 rounded-md text-slate-800 text-center sm:text-left focus:outline-none focus:ring-2 focus:ring-cyan-500 box-border">
-        </div>
-    </div>
-
-    <!-- 總服務時間（分鐘）(與開始時間對齊) -->
-    <div class="flex flex-row items-center gap-3 sm:gap-6 w-full">
-        <div class="flex-1 min-w-0">
-            <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
-                總服務時間（分鐘） <span class="text-red-500">*</span>
-            </label>
-            <input type="number" id="durationMinutes" min="1" required placeholder="自動計算或手動輸入"
-                   class="w-full max-w-full h-11 px-3 py-2.5 text-xs sm:text-base border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition box-border">
-        </div>
-        <!-- 佔位區塊，確保電腦版與時間欄位的左右結構一致 -->
-        <div class="hidden sm:block flex-1 min-w-0"></div>
-    </div>
-</div>
             <hr class="border-slate-100">
 
             <div>
@@ -353,7 +334,7 @@
 
             <div class="flex justify-between items-center pt-4 border-t border-slate-100">
                 <button type="submit" id="submitBtn"
-                        class=" bg-sky-800 hover:bg-sky-900 text-white font-medium px-5 py-2.5 rounded-md shadow-sm transition duration-150 flex items-center space-x-2 text-sm sm:text-base">
+                        class="bg-sky-800 hover:bg-sky-900 text-white font-medium px-5 py-2.5 rounded-md shadow-sm transition duration-150 flex items-center space-x-2 text-sm sm:text-base">
                     <i class="fa-solid fa-check"></i>
                     <span>提交紀錄</span>
                 </button>
@@ -466,7 +447,7 @@
                         <div class="text-xs sm:text-sm font-bold text-cyan-600" id="goalPercent">0%</div>
                     </div>
                     <div class="w-full bg-slate-100 rounded-full h-2.5 my-2">
-                        <div id="goalProgressBar" class="bg-cyan-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        <div id="goalProgressBar" class="bg-sky-800 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
                     </div>
                     <div class="flex justify-between items-center text-[11px] text-slate-400 font-medium pt-1">
                         <span>目標：<span id="goalTargetMinsText">2400</span> 分鐘</span>
@@ -514,7 +495,7 @@
 
     </div>
 
-    <!-- 6. 學期管理 Modal -->
+    <!-- Modal 區塊 (學期、教師管理與 Alert) -->
     <div id="semesterModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full p-5 sm:p-6 space-y-4">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -533,7 +514,6 @@
         </div>
     </div>
 
-    <!-- 7. 教師名單管理 Modal -->
     <div id="teacherModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full p-5 sm:p-6 space-y-4">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -552,7 +532,6 @@
         </div>
     </div>
 
-    <!-- 8. 螢幕中央提醒 Modal -->
     <div id="alertModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-sm w-full p-5 sm:p-6 text-center">
             <div class="w-12 h-12 sm:w-14 sm:h-14 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 text-xl sm:text-2xl border border-red-100">
@@ -564,7 +543,6 @@
         </div>
     </div>
 
-    <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-5 right-5 left-5 sm:left-auto bg-slate-900 text-white px-4 py-3 rounded-md shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 flex items-center justify-center sm:justify-start space-x-2 text-xs sm:text-sm z-50">
         <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
         <span id="toastMsg">紀錄新增成功！</span>
@@ -581,7 +559,6 @@
         let teachers = [];
 
         let teacherStudentMap = {};
-
         let records = [];
         let currentTeacher = "";
 
@@ -608,30 +585,33 @@
             return timeStr;
         }
 
+        // 定義主題樣式字典
         const themeConfig = {
             teacher0: {
                 headerBgColor: "#0c4a6e",
-                isDarkText: false,
                 textPrimaryClass: "text-sky-800",
                 textDarkClass: "text-sky-900",
                 bgLightClass: "bg-sky-50",
                 btnPrimaryClass: "bg-sky-800 hover:bg-sky-900",
+                progressBarClass: "bg-sky-800",
                 pillBgClass: "bg-sky-50 border-sky-200 text-sky-900",
                 pillCloseClass: "text-sky-600",
                 chartColor1: "#0c4a6e",
-                chartColor2: "#0284c7"
+                chartColor2: "#0284c7",
+                badgeClass: "bg-cyan-50 text-cyan-700 border-cyan-100"
             },
             teacher1: {
                 headerBgColor: "#448aa6",
-                isDarkText: false,
-                textPrimaryClass: "text-custom-t2",
-                textDarkClass: "text-custom-t2",
-                bgLightClass: "bg-custom-t2-light",
-                btnPrimaryClass: "bg-custom-t2 bg-custom-t2-hover text-white",
-                pillBgClass: "bg-custom-t2-light border-blue-200 text-slate-800",
-                pillCloseClass: "text-custom-t2",
+                textPrimaryClass: "text-sky-700",
+                textDarkClass: "text-sky-800",
+                bgLightClass: "bg-sky-50",
+                btnPrimaryClass: "bg-sky-700 hover:bg-sky-800",
+                progressBarClass: "bg-sky-700",
+                pillBgClass: "bg-sky-50 border-sky-200 text-sky-800",
+                pillCloseClass: "text-sky-600",
                 chartColor1: "#448aa6",
-                chartColor2: "#2d7593"
+                chartColor2: "#2d7593",
+                badgeClass: "bg-sky-50 text-sky-700 border-sky-200"
             }
         };
 
@@ -650,115 +630,108 @@
         };
 
         function loadLocalDataToUI() {
-    loadSemestersLocal();
-    loadTeachersLocal();
-    loadStudentListMapLocal();
-    loadRecordsLocal();
+            loadSemestersLocal();
+            loadTeachersLocal();
+            loadStudentListMapLocal();
+            loadRecordsLocal();
 
-    // 1. 解析網址中的 ?teacher= 參數
-    const urlParams = new URLSearchParams(window.location.search);
-    const teacherParam = urlParams.get('teacher');
+            const urlParams = new URLSearchParams(window.location.search);
+            const teacherParam = urlParams.get('teacher');
+            const savedSemester = localStorage.getItem('zhu_current_semester');
 
-    const savedSemester = localStorage.getItem('zhu_current_semester');
-
-    // 2. 如果網址帶有 ?teacher= 參數，優先使用該教師
-    if (teacherParam && teacherParam.trim() !== "") {
-        const cleanTeacherParam = teacherParam.trim();
-        if (!teachers.includes(cleanTeacherParam)) {
-            teachers.push(cleanTeacherParam);
-            if (!teacherStudentMap[cleanTeacherParam]) {
-                teacherStudentMap[cleanTeacherParam] = [];
+            if (teacherParam && teacherParam.trim() !== "") {
+                const cleanTeacherParam = teacherParam.trim();
+                if (!teachers.includes(cleanTeacherParam)) {
+                    teachers.push(cleanTeacherParam);
+                    if (!teacherStudentMap[cleanTeacherParam]) {
+                        teacherStudentMap[cleanTeacherParam] = [];
+                    }
+                    saveTeachersLocal();
+                    saveStudentMapLocal();
+                }
+                currentTeacher = cleanTeacherParam;
+                localStorage.setItem('zhu_current_teacher', cleanTeacherParam);
+            } else {
+                const savedTeacher = localStorage.getItem('zhu_current_teacher');
+                if (savedTeacher && teachers.includes(savedTeacher)) {
+                    currentTeacher = savedTeacher;
+                } else if (teachers.length > 0) {
+                    currentTeacher = teachers[0];
+                } else {
+                    currentTeacher = "";
+                }
             }
-            saveTeachersLocal();
-            saveStudentMapLocal();
-        }
-        currentTeacher = cleanTeacherParam;
-        localStorage.setItem('zhu_current_teacher', cleanTeacherParam);
-    } else {
-        // 沒有網址參數時，讀取上次儲存的紀錄或預設第一位教師
-        const savedTeacher = localStorage.getItem('zhu_current_teacher');
-        if (savedTeacher && teachers.includes(savedTeacher)) {
-            currentTeacher = savedTeacher;
-        } else if (teachers.length > 0) {
-            currentTeacher = teachers[0];
-        } else {
-            currentTeacher = "";
-        }
-    }
 
-    const autoCalculatedSemester = getCurrentSemesterByDate();
+            const autoCalculatedSemester = getCurrentSemesterByDate();
+            if (!semesters.includes(autoCalculatedSemester)) {
+                semesters.unshift(autoCalculatedSemester);
+                saveSemestersLocal();
+            }
 
-    if (!semesters.includes(autoCalculatedSemester)) {
-        semesters.unshift(autoCalculatedSemester);
-        saveSemestersLocal();
-    }
+            if (savedSemester && semesters.includes(savedSemester)) {
+                currentSemester = savedSemester;
+            } else {
+                currentSemester = autoCalculatedSemester;
+            }
 
-    if (savedSemester && semesters.includes(savedSemester)) {
-        currentSemester = savedSemester;
-    } else {
-        currentSemester = autoCalculatedSemester;
-    }
-
-    renderSemesterSelect();
-    renderTeacherSelect();
-    render();
-}
-
-        async function fetchRecordsFromGAS() {
-    if (!GAS_API_URL || GAS_API_URL.includes("YOUR_SCRIPT_ID")) return;
-
-    try {
-        const res = await fetch(GAS_API_URL);
-        const data = await res.json();
-        
-        let hasChanges = false;
-
-        if (data.records) {
-            records = data.records.map(r => ({
-                ...r,
-                serviceDate: cleanDateStr(r.serviceDate),
-                startTime: cleanTimeStr(r.startTime),
-                endTime: cleanTimeStr(r.endTime)
-            }));
-            saveRecordsLocal();
-            hasChanges = true;
-        }
-
-        if (data.semesters && data.semesters.length > 0) {
-            semesters = data.semesters;
-            saveSemestersLocal();
-            hasChanges = true;
-        }
-
-        if (data.teachers && data.teachers.length > 0) {
-            data.teachers.forEach(t => {
-                if (!teachers.includes(t)) teachers.push(t);
-            });
-            saveTeachersLocal();
-            hasChanges = true;
-        }
-
-        // 修復重點：讓雲端 GAS 傳過來的學生名單優先覆蓋，並將兩邊的學生陣列做去重合併
-        if (data.teacherStudentMap && Object.keys(data.teacherStudentMap).length > 0) {
-            Object.keys(data.teacherStudentMap).forEach(teacher => {
-                const cloudStudents = data.teacherStudentMap[teacher] || [];
-                const localStudents = teacherStudentMap[teacher] || [];
-                // 聯集去重合併
-                teacherStudentMap[teacher] = Array.from(new Set([...cloudStudents, ...localStudents]));
-            });
-            saveStudentMapLocal();
-            hasChanges = true;
-        }
-
-        if (hasChanges) {
             renderSemesterSelect();
             renderTeacherSelect();
             render();
         }
-    } catch (e) {
-        console.error("背景同步失敗，繼續使用本地快取資料", e);
-    }
-}
+
+        async function fetchRecordsFromGAS() {
+            if (!GAS_API_URL || GAS_API_URL.includes("YOUR_SCRIPT_ID")) return;
+
+            try {
+                const res = await fetch(GAS_API_URL);
+                const data = await res.json();
+                
+                let hasChanges = false;
+
+                if (data.records) {
+                    records = data.records.map(r => ({
+                        ...r,
+                        serviceDate: cleanDateStr(r.serviceDate),
+                        startTime: cleanTimeStr(r.startTime),
+                        endTime: cleanTimeStr(r.endTime)
+                    }));
+                    saveRecordsLocal();
+                    hasChanges = true;
+                }
+
+                if (data.semesters && data.semesters.length > 0) {
+                    semesters = data.semesters;
+                    saveSemestersLocal();
+                    hasChanges = true;
+                }
+
+                if (data.teachers && data.teachers.length > 0) {
+                    data.teachers.forEach(t => {
+                        if (!teachers.includes(t)) teachers.push(t);
+                    });
+                    saveTeachersLocal();
+                    hasChanges = true;
+                }
+
+                if (data.teacherStudentMap && Object.keys(data.teacherStudentMap).length > 0) {
+                    Object.keys(data.teacherStudentMap).forEach(teacher => {
+                        const cloudStudents = data.teacherStudentMap[teacher] || [];
+                        const localStudents = teacherStudentMap[teacher] || [];
+                        teacherStudentMap[teacher] = Array.from(new Set([...cloudStudents, ...localStudents]));
+                    });
+                    saveStudentMapLocal();
+                    hasChanges = true;
+                }
+
+                if (hasChanges) {
+                    renderSemesterSelect();
+                    renderTeacherSelect();
+                    render();
+                }
+            } catch (e) {
+                console.error("背景同步失敗，繼續使用本地快取資料", e);
+            }
+        }
 
         async function syncConfigToGAS() {
             if (!GAS_API_URL || GAS_API_URL.includes("YOUR_SCRIPT_ID")) return;
@@ -996,7 +969,7 @@
             document.getElementById('statCard1Icon').className = `w-9 h-9 sm:w-11 sm:h-11 ${theme.bgLightClass} ${theme.textPrimaryClass} rounded-2xl flex items-center justify-center shrink-0 text-base sm:text-lg transition-colors`;
             document.getElementById('analyticsCardIcon').className = `w-10 h-10 sm:w-11 sm:h-11 ${theme.bgLightClass} ${theme.textPrimaryClass} rounded-2xl flex items-center justify-center text-base sm:text-lg transition-colors`;
             document.getElementById('goalPercent').className = `text-xs sm:text-sm font-bold ${theme.textPrimaryClass}`;
-            document.getElementById('goalProgressBar').className = `${theme.btnPrimaryClass.split(' ')[0]} h-2.5 rounded-full transition-all duration-500`;
+            document.getElementById('goalProgressBar').className = `${theme.progressBarClass} h-2.5 rounded-full transition-all duration-500`;
 
             renderStudentPills();
         }
@@ -1202,70 +1175,69 @@
         }
 
         document.getElementById('serviceForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
+            e.preventDefault();
 
-    if (!currentTeacher) {
-        showAlertModal(['請先在頂部選單選擇或建立具體的「教師姓名」後再填寫紀錄！']);
-        return;
-    }
+            if (!currentTeacher) {
+                showAlertModal(['請先在頂部選單選擇或建立具體的「教師姓名」後再填寫紀錄！']);
+                return;
+            }
 
-    const studentNameInput = document.getElementById('studentName');
-    const studentName = studentNameInput.value.trim();
-    const serviceDate = document.getElementById('serviceDate').value;
-    const startTime = document.getElementById('startTime').value;
-    const endTime = document.getElementById('endTime').value;
-    const durationMinutes = document.getElementById('durationMinutes').value;
+            const studentNameInput = document.getElementById('studentName');
+            const studentName = studentNameInput.value.trim();
+            const serviceDate = document.getElementById('serviceDate').value;
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            const durationMinutes = document.getElementById('durationMinutes').value;
 
-    const targets = Array.from(document.querySelectorAll('input[name="target"]:checked')).map(cb => cb.value);
-    const contents = Array.from(document.querySelectorAll('input[name="content"]:checked')).map(cb => cb.value);
+            const targets = Array.from(document.querySelectorAll('input[name="target"]:checked')).map(cb => cb.value);
+            const contents = Array.from(document.querySelectorAll('input[name="content"]:checked')).map(cb => cb.value);
 
-    const missingItems = [];
-    let targetFocusEl = null;
+            const missingItems = [];
+            let targetFocusEl = null;
 
-    if (!studentName) { missingItems.push('請輸入或選擇「服務學生姓名」'); if (!targetFocusEl) targetFocusEl = studentNameInput; }
-    if (!serviceDate) { missingItems.push('請選擇「服務日期」'); if (!targetFocusEl) targetFocusEl = document.getElementById('serviceDate'); }
-    if (!startTime || !endTime || !durationMinutes || parseInt(durationMinutes) <= 0) {
-        missingItems.push('請設定正確的「服務時間與分鐘數」'); if (!targetFocusEl) targetFocusEl = document.getElementById('startTime');
-    }
-    if (targets.length === 0) missingItems.push('請至少勾選一項「服務對象」');
-    if (contents.length === 0) missingItems.push('請至少勾選一項「間接服務內容」');
+            if (!studentName) { missingItems.push('請輸入或選擇「服務學生姓名」'); if (!targetFocusEl) targetFocusEl = studentNameInput; }
+            if (!serviceDate) { missingItems.push('請選擇「服務日期」'); if (!targetFocusEl) targetFocusEl = document.getElementById('serviceDate'); }
+            if (!startTime || !endTime || !durationMinutes || parseInt(durationMinutes) <= 0) {
+                missingItems.push('請設定正確的「服務時間與分鐘數」'); if (!targetFocusEl) targetFocusEl = document.getElementById('startTime');
+            }
+            if (targets.length === 0) missingItems.push('請至少勾選一項「服務對象」');
+            if (contents.length === 0) missingItems.push('請至少勾選一項「間接服務內容」');
 
-    if (missingItems.length > 0) {
-        showAlertModal(missingItems, targetFocusEl);
-        return;
-    }
+            if (missingItems.length > 0) {
+                showAlertModal(missingItems, targetFocusEl);
+                return;
+            }
 
-    // 1. 如果是新學生，將其加入該教師的名單並同步至雲端
-    const teacherStudents = getCurrentTeacherStudents();
-    if (studentName && !teacherStudents.includes(studentName)) {
-        teacherStudents.push(studentName);
-        saveStudentMapLocal(); // 儲存至本地
-        syncConfigToGAS();     // 關鍵修正：同時同步學生名單設定至雲端 GAS
-    }
+            const teacherStudents = getCurrentTeacherStudents();
+            if (studentName && !teacherStudents.includes(studentName)) {
+                teacherStudents.push(studentName);
+                saveStudentMapLocal();
+                syncConfigToGAS();
+            }
 
-    const record = {
-        id: Date.now(),
-        semester: currentSemester,
-        teacherName: currentTeacher,
-        studentName: studentName,
-        serviceDate: serviceDate,
-        startTime: startTime,
-        endTime: endTime,
-        durationMinutes: parseInt(durationMinutes) || 0,
-        targets: targets,
-        contents: contents,
-        notes: document.getElementById('notes').value.trim(),
-        createdAt: new Date().toLocaleString('zh-TW')
-    };
+            const record = {
+                id: Date.now(),
+                semester: currentSemester,
+                teacherName: currentTeacher,
+                studentName: studentName,
+                serviceDate: serviceDate,
+                startTime: startTime,
+                endTime: endTime,
+                durationMinutes: parseInt(durationMinutes) || 0,
+                targets: targets,
+                contents: contents,
+                notes: document.getElementById('notes').value.trim(),
+                createdAt: new Date().toLocaleString('zh-TW')
+            };
 
-    records.unshift(record);
-    saveRecordsLocal();
-    syncRecordToGAS(record); // 同步紀錄至雲端 GAS
+            records.unshift(record);
+            saveRecordsLocal();
+            syncRecordToGAS(record);
 
-    render();
-    resetForm();
-    showToast(`[${currentSemester}] 服務紀錄新增成功！`, 'success');
-});
+            render();
+            resetForm();
+            showToast(`[${currentSemester}] 服務紀錄新增成功！`, 'success');
+        });
 
         function resetForm() {
             document.getElementById('serviceForm').reset();
@@ -1328,8 +1300,7 @@
             } else {
                 noData.classList.add('hidden');
                 finalFiltered.forEach(r => {
-                    const isTeacher2 = teachers.indexOf(r.teacherName) === 1;
-                    const badgeClass = isTeacher2 ? "bg-custom-t2-light text-custom-t2 border-blue-200" : "bg-cyan-50 text-cyan-700 border-cyan-100";
+                    const badgeClass = theme.badgeClass;
 
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-slate-50/60 transition";
