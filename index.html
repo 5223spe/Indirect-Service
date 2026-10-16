@@ -6,33 +6,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>教師間接服務項目及相關記錄系統</title>
 
-    <!-- 1. 一般瀏覽器分頁圖示 (Favicon) - 加 ?v=2 強制電腦清除舊快取 -->
+    <!-- 1. 一般瀏覽器分頁圖示 (Favicon) -->
     <link rel="icon" href="icon.png?v=2" type="image/png">
 
-    <!-- 2. iOS (iPhone/iPad) 加到主畫面的圖示 (Apple Touch Icon) -->
+    <!-- 2. iOS (iPhone/iPad) 加到主畫面的圖示 -->
     <link rel="apple-touch-icon" href="icon.png?v=2">
 
-    <!-- 3. Android / Chrome 加到桌面與 Web App 圖示 -->
+    <!-- 3. Android / Chrome 加到桌面圖示 -->
     <link rel="shortcut icon" href="icon.png?v=2">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="間接服務">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>教師間接服務項目及相關記錄系統</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- ExcelJS for Styled Excel Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
-    <!-- FileSaver.js for File Saving -->
+    <!-- FileSaver.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <!-- Chart.js for Visual Statistics -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
         body {
@@ -57,7 +52,7 @@
             max-width: 100% !important;
         }
 
-        /* 手機響應式專用優化（僅影響 640px 以下手機螢幕） */
+        /* 手機響應式專用優化 */
         @media (max-width: 639px) {
             body {
                 padding-top: 1rem !important;
@@ -117,7 +112,7 @@
             </div>
         </div>
 
-        <!-- 1. Header (網頁名稱與說明) -->
+        <!-- 1. Header -->
         <div class="border-b border-slate-200 pb-4">
             <h1 class="text-xl sm:text-3xl font-bold text-slate-900 tracking-tight mb-2">
                 [<span id="headerSemesterTitle" class="text-sky-800">114-1</span>] <span id="headerTeacherName">教師</span> 間接服務紀錄表
@@ -186,7 +181,7 @@
             </div>
         </div>
 
-        <!-- 3. Form Start (新增服務紀錄) -->
+        <!-- 3. Form Start -->
         <form id="serviceForm" class="bg-white border border-slate-200 rounded-xl p-4 sm:p-8 shadow-sm space-y-5 sm:space-y-6 overflow-hidden">
             <div class="border-b border-slate-100 pb-3 mb-4 flex justify-between items-center gap-2">
                 <h2 class="text-base sm:text-lg font-semibold text-slate-900 flex items-center gap-2 truncate">
@@ -360,7 +355,7 @@
             </div>
         </form>
 
-        <!-- 4. History Records Section (歷史紀錄區塊) -->
+        <!-- 4. History Records Section -->
         <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-8 shadow-sm space-y-4">
             
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-2 gap-3">
@@ -403,7 +398,7 @@
                 </div>
             </div>
 
-            <!-- 超出 10 筆滑動容器 -->
+            <!-- 表格容器 -->
             <div class="overflow-x-auto overflow-y-auto max-h-[520px] -mx-4 sm:mx-0 px-4 sm:px-0 border border-slate-100 rounded-lg">
                 <table class="w-full text-left border-collapse min-w-[700px]">
                     <thead class="sticky top-0 bg-slate-50 z-10 shadow-sm">
@@ -550,7 +545,7 @@
         </div>
     </div>
 
-    <!-- 8. 螢幕中央提醒 Modal -->
+    <!-- 8. 螢幕中央提醒 Modal (欄位未填完整提醒) -->
     <div id="alertModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-sm w-full p-5 sm:p-6 text-center">
             <div class="w-12 h-12 sm:w-14 sm:h-14 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 text-xl sm:text-2xl border border-red-100">
@@ -562,11 +557,31 @@
         </div>
     </div>
 
-    <!-- 9. 編輯紀錄專用 Modal 彈出視窗 -->
+    <!-- 9. 畫面中央視窗 (查看省略內容專用 Modal) -->
+    <div id="viewDetailModal" onclick="closeViewDetailModal(event)" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div onclick="event.stopPropagation()" class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full p-5 sm:p-6 space-y-4 transform transition-all">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <i id="viewDetailIcon" class="fa-solid fa-circle-info text-sky-800"></i>
+                    <span id="viewDetailTitle">詳細內容</span>
+                </h3>
+                <button type="button" onclick="closeViewDetailModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div id="viewDetailContent" class="text-slate-700 text-sm whitespace-pre-line leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100 max-h-60 overflow-y-auto">
+            </div>
+            <div class="flex justify-end pt-1">
+                <button type="button" onclick="closeViewDetailModal()" class="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs sm:text-sm font-medium rounded-xl shadow-sm transition">
+                    關閉
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 10. 編輯紀錄專用 Modal 彈出視窗 -->
     <div id="editRecordModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 sm:p-6">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden transition-all transform">
-            
-            <!-- Modal 固定頁首 -->
             <div class="flex justify-between items-center border-b border-slate-100 px-5 sm:px-6 py-4 bg-slate-50/50 shrink-0">
                 <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
                     <i class="fa-solid fa-pen-to-square text-sky-800"></i>
@@ -577,10 +592,8 @@
                 </button>
             </div>
 
-            <!-- Modal 表單主體區 -->
             <div class="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1">
                 <form id="editRecordForm" class="space-y-4">
-                    <!-- 服務學生姓名 -->
                     <div>
                         <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
                             服務學生姓名 <span class="text-red-500">*</span>
@@ -589,7 +602,6 @@
                                class="w-full px-3 py-2 text-sm sm:text-base border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition">
                     </div>
 
-                    <!-- 服務日期 -->
                     <div>
                         <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
                             服務日期 <span class="text-red-500">*</span>
@@ -598,7 +610,6 @@
                                class="w-full h-11 px-3 py-2.5 text-xs sm:text-base border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition box-border">
                     </div>
 
-                    <!-- 時間與時數 -->
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
@@ -624,7 +635,6 @@
                                class="w-full h-11 px-3 py-2.5 text-xs sm:text-base border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition box-border">
                     </div>
 
-                    <!-- 服務對象 -->
                     <div>
                         <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-2">
                             服務對象 <span class="text-red-500">*</span>
@@ -641,7 +651,6 @@
                         </div>
                     </div>
 
-                    <!-- 間接服務內容 -->
                     <div>
                         <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-2">
                             間接服務內容 <span class="text-red-500">*</span>
@@ -657,7 +666,6 @@
                         </div>
                     </div>
 
-                    <!-- 備註 -->
                     <div>
                         <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">備註</label>
                         <textarea id="editNotes" rows="3" placeholder="請輸入備註內容..." 
@@ -666,7 +674,6 @@
                 </form>
             </div>
 
-            <!-- Modal 固定頁尾 -->
             <div class="flex justify-end gap-3 px-5 sm:px-6 py-4 bg-slate-50/50 border-t border-slate-100 shrink-0">
                 <button type="button" onclick="closeEditModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md text-sm font-medium transition">
                     取消
@@ -676,7 +683,6 @@
                     <span>儲存變更</span>
                 </button>
             </div>
-
         </div>
     </div>
 
@@ -1198,6 +1204,19 @@
             if (focusTargetElement) focusTargetElement.focus();
         }
 
+        // 開啟畫面中央查看詳細內容小視窗 (Modal)
+        function openViewDetailModal(title, content) {
+            if (!content) return;
+            document.getElementById('viewDetailTitle').innerText = title;
+            document.getElementById('viewDetailContent').innerText = content;
+            document.getElementById('viewDetailModal').classList.remove('hidden');
+        }
+
+        function closeViewDetailModal(e) {
+            if (e && e.target !== e.currentTarget) return;
+            document.getElementById('viewDetailModal').classList.add('hidden');
+        }
+
         function updateGoalHours() {
             const val = parseFloat(document.getElementById('goalHoursInput').value) || 40;
             localStorage.setItem('zhu_teacher_goal_hours', val);
@@ -1545,29 +1564,29 @@
                     const formattedTargetsHTML = (r.targets || []).map(t => {
                         const fullText = escapeHtml(t);
                         const displayText = t.length > 4 ? escapeHtml(t.substring(0, 4)) + '...' : fullText;
-                        return `<span class="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-md font-medium cursor-pointer inline-block whitespace-nowrap" title="${fullText}" onclick="alert('${fullText}')">${displayText}</span>`;
+                        return `<span class="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-md font-medium cursor-pointer inline-block whitespace-nowrap hover:bg-slate-200 transition" title="${fullText}" onclick="openViewDetailModal('服務對象', '${fullText}')">${displayText}</span>`;
                     }).join('');
 
-                    // 間接服務內容（最多呈現 2 項）
+                    // 間接服務內容（最多呈現 2 項，多的跳 Modal 查看）
                     let formattedContentsHTML = '';
                     const contents = r.contents || [];
                     if (contents.length > 2) {
                         const visibleContents = contents.slice(0, 2);
                         const extraCount = contents.length - 2;
-                        const fullContentListStr = escapeHtml(contents.join(', '));
+                        const fullContentListStr = escapeHtml(contents.join('\n• '));
                         
                         formattedContentsHTML = visibleContents.map(c => 
                             `<span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-md font-medium border border-slate-200/60 inline-block whitespace-nowrap">${escapeHtml(c)}</span>`
                         ).join('');
                         
-                        formattedContentsHTML += `<span class="bg-sky-50 text-sky-700 text-xs px-2 py-1 rounded-md font-medium border border-sky-100 cursor-pointer inline-block whitespace-nowrap" title="${fullContentListStr}" onclick="alert('完整服務內容：\\n${fullContentListStr}')">+${extraCount}種...</span>`;
+                        formattedContentsHTML += `<span class="bg-sky-50 text-sky-700 hover:bg-sky-100 text-xs px-2 py-1 rounded-md font-medium border border-sky-100 cursor-pointer inline-block whitespace-nowrap transition" title="點擊查看完整內容" onclick="openViewDetailModal('完整間接服務內容', '• ${fullContentListStr}')">+${extraCount}種...</span>`;
                     } else {
                         formattedContentsHTML = contents.map(c => 
                             `<span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-md font-medium border border-slate-200/60 inline-block whitespace-nowrap">${escapeHtml(c)}</span>`
                         ).join('');
                     }
 
-                    // 備註欄位處理：最多呈現 2 個字，超出部分顯示 ...
+                    // 備註欄位處理（最多呈現 2 個字，點擊跳 Modal）
                     const rawNotes = r.notes || '';
                     const fullNotes = escapeHtml(rawNotes);
                     const maxNotesLength = 2;
@@ -1607,7 +1626,7 @@
                                 ${formattedContentsHTML}
                             </div>
                         </td>
-                        <td class="p-3 max-w-xs text-slate-500 text-xs align-top cursor-pointer truncate" title="${fullNotes}" onclick="if('${fullNotes}') alert('完整備註：\\n${fullNotes}')">
+                        <td class="p-3 max-w-xs text-slate-500 text-xs align-top cursor-pointer truncate hover:text-slate-800 transition" title="${fullNotes}" onclick="if('${fullNotes}') openViewDetailModal('完整備註內容', '${fullNotes}')">
                             ${displayNotes}
                         </td>
                         <td class="p-3 whitespace-nowrap text-center align-top">
