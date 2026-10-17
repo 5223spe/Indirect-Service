@@ -511,6 +511,28 @@
 
     </div>
 
+    <!-- 檢視完整內容 Modal (點擊省略號出現的小視窗) -->
+    <div id="detailViewModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full p-5 sm:p-6 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info text-sky-800"></i>
+                    <span id="detailViewTitle">完整細節</span>
+                </h3>
+                <button type="button" onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600 transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div id="detailViewContent" class="text-sm text-slate-700 leading-relaxed max-h-60 overflow-y-auto custom-scrollbar pt-1">
+            </div>
+            <div class="flex justify-end pt-2">
+                <button type="button" onclick="closeDetailModal()" class="px-4 py-2 text-xs sm:text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition">
+                    關閉
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- 編輯紀錄 Modal (畫面中央四角圓弧小視窗) -->
     <div id="editRecordModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
         <!-- 外層 Modal：固定圓角與內陰影，並加上自訂美化滾動條樣式 -->
@@ -1447,6 +1469,17 @@
             document.getElementById('editRecordModal').classList.add('hidden');
         }
 
+        // 彈出式視窗：顯示完整的服務對象、內容或備註
+        function openDetailModal(title, contentHtml) {
+            document.getElementById('detailViewTitle').innerText = title;
+            document.getElementById('detailViewContent').innerHTML = contentHtml;
+            document.getElementById('detailViewModal').classList.remove('hidden');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailViewModal').classList.add('hidden');
+        }
+
         // 提交小視窗的編輯表單
         async function handleEditFormSubmit(e) {
             e.preventDefault();
@@ -1588,6 +1621,80 @@
                 finalFiltered.forEach(r => {
                     const badgeClass = theme.badgeClass;
 
+                    // 1. 處理服務對象 (超過 1 個項目 或 單項目字數 > 4 時省略)
+                    const fullTargetsText = r.targets.join(', ');
+                    let targetsHtml = '';
+                    const needsTargetEllipsis = r.targets.length > 1 || (r.targets.length === 1 && r.targets[0].length > 4);
+
+                    if (needsTargetEllipsis) {
+                        const firstTarget = r.targets[0] || '';
+                        const displayTargetText = firstTarget.length > 4 ? firstTarget.substring(0, 4) : firstTarget;
+                        const targetsModalHtml = `<ul class="list-disc pl-5 space-y-1">${r.targets.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul>`;
+                        
+                        targetsHtml = `
+                            <div class="flex items-center gap-1">
+                                <span class="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-md font-medium">${escapeHtml(displayTargetText)}</span>
+                                <button type="button" title="點擊檢視完整清單：&#10;${escapeHtml(fullTargetsText)}" 
+                                        onclick="openDetailModal('完整服務對象清單', '${escapeHtml(targetsModalHtml)}')"
+                                        class="bg-slate-200 hover:bg-slate-300 text-slate-600 text-xs px-1.5 py-0.5 rounded font-bold cursor-pointer transition">
+                                    ...
+                                </button>
+                            </div>
+                        `;
+                    } else {
+                        targetsHtml = `
+                            <div class="flex flex-wrap gap-1.5">
+                                ${r.targets.map(t => `<span class="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-md font-medium">${escapeHtml(t)}</span>`).join('')}
+                            </div>
+                        `;
+                    }
+
+                    // 2. 處理間接服務內容 (超過 1 個項目時省略)
+                    const fullContentsText = r.contents.join(', ');
+                    let contentsHtml = '';
+                    if (r.contents.length > 1) {
+                        const firstContent = r.contents[0];
+                        const contentsModalHtml = `<ul class="list-disc pl-5 space-y-1">${r.contents.map(c => `<li>${escapeHtml(c)}</li>`).join('')}</ul>`;
+                        
+                        contentsHtml = `
+                            <div class="flex items-center gap-1">
+                                <span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-md font-medium border border-slate-200/60">${escapeHtml(firstContent)}</span>
+                                <button type="button" title="點擊檢視完整內容：&#10;${escapeHtml(fullContentsText)}" 
+                                        onclick="openDetailModal('完整間接服務內容', '${escapeHtml(contentsModalHtml)}')"
+                                        class="bg-slate-200 hover:bg-slate-300 text-slate-600 text-xs px-1.5 py-0.5 rounded font-bold cursor-pointer transition">
+                                    ...
+                                </button>
+                            </div>
+                        `;
+                    } else {
+                        contentsHtml = `
+                            <div class="flex flex-wrap gap-1.5">
+                                ${r.contents.map(c => `<span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-md font-medium border border-slate-200/60">${escapeHtml(c)}</span>`).join('')}
+                            </div>
+                        `;
+                    }
+
+                    // 3. 處理備註 (超過 2 個字時省略)
+                    const rawNotes = r.notes || '';
+                    let notesHtml = '-';
+                    if (rawNotes.length > 2) {
+                        const displayNotes = rawNotes.substring(0, 2);
+                        const safeNotes = escapeHtml(rawNotes).replace(/\n/g, '<br>');
+                        
+                        notesHtml = `
+                            <div class="flex items-center gap-1">
+                                <span>${escapeHtml(displayNotes)}</span>
+                                <button type="button" title="點擊檢視完整備註：&#10;${escapeHtml(rawNotes)}" 
+                                        onclick="openDetailModal('完整備註內容', '${safeNotes}')"
+                                        class="bg-slate-200 hover:bg-slate-300 text-slate-600 text-xs px-1.5 py-0.5 rounded font-bold cursor-pointer transition">
+                                    ...
+                                </button>
+                            </div>
+                        `;
+                    } else if (rawNotes.length > 0) {
+                        notesHtml = escapeHtml(rawNotes);
+                    }
+
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-slate-50/60 transition";
                     tr.innerHTML = `
@@ -1613,17 +1720,13 @@
                             </div>
                         </td>
                         <td class="p-3 max-w-xs align-top">
-                            <div class="flex flex-wrap gap-1.5">
-                                ${r.targets.map(t => `<span class="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-md font-medium">${escapeHtml(t)}</span>`).join('')}
-                            </div>
+                            ${targetsHtml}
                         </td>
                         <td class="p-3 max-w-xs align-top">
-                            <div class="flex flex-wrap gap-1.5">
-                                ${r.contents.map(c => `<span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-md font-medium border border-slate-200/60">${escapeHtml(c)}</span>`).join('')}
-                            </div>
+                            ${contentsHtml}
                         </td>
-                        <td class="p-3 max-w-xs text-slate-500 text-xs truncate align-top" title="${escapeHtml(r.notes)}">
-                            ${escapeHtml(r.notes) || '-'}
+                        <td class="p-3 max-w-xs text-slate-500 text-xs align-top">
+                            ${notesHtml}
                         </td>
                         <td class="p-3 whitespace-nowrap text-center align-top">
                             <div class="flex items-center justify-center gap-1">
