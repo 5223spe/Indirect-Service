@@ -76,6 +76,16 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
+
+        /* 🌟 新增：歷史紀錄新增時的持續脈衝閃爍效果 */
+        @keyframes highlight-pulse {
+            0%, 100% { background-color: rgba(167, 243, 208, 0.85); } /* 淺綠色 */
+            50% { background-color: rgba(236, 253, 245, 0.3); }      /* 超淺綠 */
+        }
+
+        .record-highlight-active {
+            animation: highlight-pulse 1.2s infinite ease-in-out;
+        }
     </style>
 </head>
 <body class="py-8 px-4 sm:px-6 lg:px-8 text-slate-800">
@@ -1446,19 +1456,39 @@
             resetForm();
             showToast(`[${currentSemester}] 服務紀錄新增成功！`, 'success');
 
-            // 自動平滑滾動至新增紀錄並高亮提示
+            // 🌟 新增：自動平滑滾動至新增紀錄，並掛載「滾動即熄滅」監聽
             setTimeout(() => {
                 const newRow = document.getElementById(`record-row-${record.id}`);
                 if (newRow) {
+                    // 1. 平滑滾動到該列
                     newRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    newRow.classList.add('bg-emerald-100/80');
+                    
+                    // 2. 加上持續脈衝閃爍效果
+                    newRow.classList.add('record-highlight-active');
+
+                    // 3. 建立移除高亮效果的函式
+                    const removeHighlight = () => {
+                        newRow.classList.remove('record-highlight-active');
+                        window.removeEventListener('wheel', removeHighlight);
+                        window.removeEventListener('touchmove', removeHighlight);
+                        window.removeEventListener('keydown', keydownHandler);
+                    };
+
+                    const keydownHandler = (e) => {
+                        if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(e.key)) {
+                            removeHighlight();
+                        }
+                    };
+
+                    // 4. 延遲 400ms 後掛載滾動/滑動事件（避開平滑滾動自身的自動運動）
                     setTimeout(() => {
-                        newRow.classList.remove('bg-emerald-100/80');
-                    }, 2000);
+                        window.addEventListener('wheel', removeHighlight, { passive: true });
+                        window.addEventListener('touchmove', removeHighlight, { passive: true });
+                        window.addEventListener('keydown', keydownHandler);
+                    }, 400);
                 }
             }, 100);
         });
-
         function editRecord(id) {
             const record = records.find(r => String(r.id) === String(id));
             if (!record) return;
