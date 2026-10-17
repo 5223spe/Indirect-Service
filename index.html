@@ -500,7 +500,7 @@
                 <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-sm">
                     <h3 class="text-xs sm:text-sm font-bold text-slate-800 mb-3 sm:mb-4 flex items-center gap-2">
                         <i class="fa-solid fa-chart-line text-emerald-500"></i>
-                        月度服務時間趨勢 (分鐘)
+                        月度服務時間趨勢
                     </h3>
                     <div class="h-48 sm:h-56">
                         <canvas id="trendChart"></canvas>
@@ -515,7 +515,7 @@
     <div id="customTooltip" class="fixed pointer-events-none z-[100] hidden bg-slate-900/90 text-white text-sm sm:text-base px-3.5 py-2 rounded-xl shadow-xl backdrop-blur-md transition-opacity duration-150 border border-slate-700/50 max-w-xs leading-snug">
     </div>
 
-    <!-- 檢視完整內容 Modal (點擊省略號出現的中央圓角小視窗) -->
+    <!-- 檢視完整內容 Modal -->
     <div id="detailViewModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -537,7 +537,7 @@
         </div>
     </div>
 
-    <!-- 編輯紀錄 Modal (畫面中央四角圓弧小視窗) -->
+    <!-- 編輯紀錄 Modal -->
     <div id="editRecordModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-xl w-full p-5 sm:p-6 my-8 max-h-[85vh] flex flex-col overflow-hidden relative">
             
@@ -1802,7 +1802,6 @@
             const targetCounts = { '學生本人': 0, '輔導教師': 0, '導師': 0, '任科教師': 0, '家長': 0, '同儕': 0, '行政人員': 0, '其他相關專業人員': 0 };
             filtered.forEach(r => { if (r.targets) r.targets.forEach(t => { if (targetCounts[t] !== undefined) targetCounts[t]++; }); });
 
-            // 1. 調整圖表項目的順序，嚴格比照表單勾選項目的順序[cite: 3]
             const contentCounts = { 
                 '需求評估與處理': 0, 
                 '入班支援': 0, 
@@ -1832,7 +1831,7 @@
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } }, cutout: '60%' }
             });
 
-            // 2. 針對「間接服務內容統計」長條圖：調整項目順序、去除小數點、標示單位（次）
+            // 調整單位 (次) 水平置於縱軸上方
             const contentCtx = document.getElementById('contentChart').getContext('2d');
             if (contentChartInstance) contentChartInstance.destroy();
             contentChartInstance = new Chart(contentCtx, {
@@ -1852,24 +1851,44 @@
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: '單位：次',
-                                font: { size: 10, weight: 'bold' },
+                                text: '(次)',
+                                align: 'end',       // 靠縱軸最上方
+                                rotation: 0,        // 水平不旋轉
+                                font: { size: 11, weight: 'bold' },
                                 color: '#64748b'
                             },
                             ticks: {
-                                precision: 0 // 強制以整數顯示，去除 .5 小數點
+                                precision: 0 // 強制以整數顯示
                             }
                         } 
                     } 
                 }
             });
 
+            // 月度服務時間趨勢圖表：同步設定 (分鐘) 靠上方水平顯示
             const trendCtx = document.getElementById('trendChart').getContext('2d');
             if (trendChartInstance) trendChartInstance.destroy();
             trendChartInstance = new Chart(trendCtx, {
                 type: 'line',
                 data: { labels: sortedMonths, datasets: [{ data: sortedMonths.map(m => monthTrend[m]), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 2, fill: true }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { legend: { display: false } }, 
+                    scales: { 
+                        y: { 
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '(分鐘)',
+                                align: 'end',
+                                rotation: 0,
+                                font: { size: 11, weight: 'bold' },
+                                color: '#64748b'
+                            }
+                        } 
+                    } 
+                }
             });
         }
 
