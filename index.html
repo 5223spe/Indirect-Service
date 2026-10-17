@@ -511,7 +511,7 @@
 
     </div>
 
-    <!-- 全局圓角浮動 Tooltip 提示框 (懸停發光顯示) -->
+    <!-- 全局圓角浮動 Tooltip 提示框 -->
     <div id="customTooltip" class="fixed pointer-events-none z-[100] hidden bg-slate-900/90 text-white text-sm sm:text-base px-3.5 py-2 rounded-xl shadow-xl backdrop-blur-md transition-opacity duration-150 border border-slate-700/50 max-w-xs leading-snug">
     </div>
 
@@ -527,7 +527,6 @@
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
-            <!-- 加大字體至 text-base -->
             <div id="detailViewContent" class="text-base text-slate-700 leading-relaxed max-h-64 overflow-y-auto custom-scrollbar pt-1">
             </div>
             <div class="flex justify-end pt-2">
@@ -540,10 +539,8 @@
 
     <!-- 編輯紀錄 Modal (畫面中央四角圓弧小視窗) -->
     <div id="editRecordModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
-        <!-- 外層 Modal：固定圓角與內陰影，並加上自訂美化滾動條樣式 -->
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-xl w-full p-5 sm:p-6 my-8 max-h-[85vh] flex flex-col overflow-hidden relative">
             
-            <!-- 頂部標題區 (固定不跟隨滾動) -->
             <div class="flex justify-between items-center border-b border-slate-100 pb-3 shrink-0">
                 <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
                     <i class="fa-solid fa-pen-to-square text-sky-800"></i>
@@ -554,7 +551,6 @@
                 </button>
             </div>
 
-            <!-- 表單與內容區 (滾動條放內部，並自訂微型圓角滾動條) -->
             <div class="overflow-y-auto flex-1 pr-1.5 mt-4 space-y-4 custom-scrollbar">
                 <form id="editRecordForm" onsubmit="handleEditFormSubmit(event)" class="space-y-4">
                     <input type="hidden" id="editRecordId">
@@ -1446,7 +1442,6 @@
             showToast(`[${currentSemester}] 服務紀錄新增成功！`, 'success');
         });
 
-        // 開啟彈出式小視窗進行編輯
         function editRecord(id) {
             const record = records.find(r => String(r.id) === String(id));
             if (!record) return;
@@ -1474,7 +1469,6 @@
             document.getElementById('editRecordModal').classList.add('hidden');
         }
 
-        // 彈出式視窗：顯示完整的服務對象、內容或備註
         function openDetailModal(title, contentHtml) {
             document.getElementById('detailViewTitle').innerText = title;
             document.getElementById('detailViewContent').innerHTML = contentHtml;
@@ -1485,7 +1479,6 @@
             document.getElementById('detailViewModal').classList.add('hidden');
         }
 
-        // 自訂懸停美化 Tooltip 函數 (圓角框 + 放大字體)
         function showCustomTooltip(e, text) {
             const tooltip = document.getElementById('customTooltip');
             tooltip.innerText = text;
@@ -1503,7 +1496,6 @@
             tooltip.classList.add('hidden');
         }
 
-        // 提交小視窗的編輯表單
         async function handleEditFormSubmit(e) {
             e.preventDefault();
 
@@ -1608,7 +1600,6 @@
 
             const teacherFiltered = getFilteredRecords();
 
-            // 按晤談時間先後順序排列（日期由舊到新，時間由早到晚）
             teacherFiltered.sort((a, b) => {
                 const dateA = a.serviceDate || '';
                 const dateB = b.serviceDate || '';
@@ -1628,7 +1619,6 @@
                 return matchesQuery && matchesStudent;
             });
 
-            // 當搜尋/過濾後的筆數超過 10 筆時，加入最大高度與垂直滾動條；否則恢復自動高度
             if (finalFiltered.length > 10) {
                 tableContainer.classList.add('max-h-[500px]', 'overflow-y-auto');
             } else {
@@ -1644,7 +1634,6 @@
                 finalFiltered.forEach(r => {
                     const badgeClass = theme.badgeClass;
 
-                    // 1. 處理服務對象 (超過 1 個項目 或 單項目字數 > 4 時省略)
                     const fullTargetsText = r.targets.join(', ');
                     let targetsHtml = '';
                     const needsTargetEllipsis = r.targets.length > 1 || (r.targets.length === 1 && r.targets[0].length > 4);
@@ -1674,7 +1663,6 @@
                         `;
                     }
 
-                    // 2. 處理間接服務內容 (超過 1 個項目時省略)
                     const fullContentsText = r.contents.join(', ');
                     let contentsHtml = '';
                     if (r.contents.length > 1) {
@@ -1701,7 +1689,6 @@
                         `;
                     }
 
-                    // 3. 處理備註 (超過 2 個字時省略)
                     const rawNotes = r.notes || '';
                     let notesHtml = '-';
                     if (rawNotes.length > 2) {
@@ -1815,7 +1802,16 @@
             const targetCounts = { '學生本人': 0, '輔導教師': 0, '導師': 0, '任科教師': 0, '家長': 0, '同儕': 0, '行政人員': 0, '其他相關專業人員': 0 };
             filtered.forEach(r => { if (r.targets) r.targets.forEach(t => { if (targetCounts[t] !== undefined) targetCounts[t]++; }); });
 
-            const contentCounts = { '個別晤談或指導': 0, '需求評估與處理': 0, '與普教教師合作教學': 0, '諮詢服務': 0, '入班支援': 0, '參與專業服務': 0, '其他特殊教育相關服務事項': 0 };
+            // 1. 調整圖表項目的順序，嚴格比照表單勾選項目的順序[cite: 3]
+            const contentCounts = { 
+                '需求評估與處理': 0, 
+                '入班支援': 0, 
+                '個別晤談或指導': 0, 
+                '與普教教師合作教學': 0, 
+                '諮詢服務': 0, 
+                '參與專業服務': 0, 
+                '其他特殊教育相關服務事項': 0 
+            };
             filtered.forEach(r => { if (r.contents) r.contents.forEach(c => { if (contentCounts[c] !== undefined) contentCounts[c]++; }); });
 
             const monthTrend = {};
@@ -1836,12 +1832,36 @@
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } }, cutout: '60%' }
             });
 
+            // 2. 針對「間接服務內容統計」長條圖：調整項目順序、去除小數點、標示單位（次）
             const contentCtx = document.getElementById('contentChart').getContext('2d');
             if (contentChartInstance) contentChartInstance.destroy();
             contentChartInstance = new Chart(contentCtx, {
                 type: 'bar',
                 data: { labels: Object.keys(contentCounts), datasets: [{ data: Object.values(contentCounts), backgroundColor: theme.chartColor1, borderRadius: 4 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { font: { size: 9 }, maxRotation: 30, minRotation: 30 } }, y: { beginAtZero: true } } }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { display: false } 
+                    }, 
+                    scales: { 
+                        x: { 
+                            ticks: { font: { size: 9 }, maxRotation: 30, minRotation: 30 } 
+                        }, 
+                        y: { 
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '單位：次',
+                                font: { size: 10, weight: 'bold' },
+                                color: '#64748b'
+                            },
+                            ticks: {
+                                precision: 0 // 強制以整數顯示，去除 .5 小數點
+                            }
+                        } 
+                    } 
+                }
             });
 
             const trendCtx = document.getElementById('trendChart').getContext('2d');
