@@ -486,37 +486,41 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-                <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-sm">
-                    <h3 class="text-xs sm:text-sm font-bold text-slate-800 mb-3 sm:mb-4 flex items-center gap-2">
-                        <i id="chartTargetIcon" class="fa-solid fa-chart-pie text-cyan-500 transition-colors"></i>
-                        服務對象分布占比
-                    </h3>
-                    <div class="h-48 sm:h-56 relative flex items-center justify-center">
-                        <canvas id="targetChart"></canvas>
-                    </div>
-                </div>
+            <!-- 上方兩張圖表（併排 2 欄） -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+    <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-sm">
+        <h3 class="text-xs sm:text-sm font-bold text-slate-800 mb-3 sm:mb-4 flex items-center gap-2">
+            <i id="chartTargetIcon" class="fa-solid fa-chart-pie text-cyan-500 transition-colors"></i>
+            服務對象分布占比
+        </h3>
+        <div class="h-48 sm:h-56 relative flex items-center justify-center">
+            <canvas id="targetChart"></canvas>
+        </div>
+    </div>
 
-                <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-sm">
-                    <h3 class="text-xs sm:text-sm font-bold text-slate-800 mb-3 sm:mb-4 flex items-center gap-2">
-                        <i id="chartContentIcon" class="fa-solid fa-bars-staggered text-sky-500 transition-colors"></i>
-                        間接服務內容統計
-                    </h3>
-                    <div class="h-48 sm:h-56">
-                        <canvas id="contentChart"></canvas>
-                    </div>
-                </div>
+    <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-sm">
+        <h3 class="text-xs sm:text-sm font-bold text-slate-800 mb-3 sm:mb-4 flex items-center gap-2">
+            <i id="chartContentIcon" class="fa-solid fa-bars-staggered text-sky-500 transition-colors"></i>
+            間接服務內容統計
+        </h3>
+        <div class="h-48 sm:h-56">
+            <canvas id="contentChart"></canvas>
+        </div>
+    </div>
+</div>
 
-                <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-sm">
-                    <h3 class="text-xs sm:text-sm font-bold text-slate-800 mb-3 sm:mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-user-graduate text-emerald-500"></i>
-                        學生晤談次數統計
-                    </h3>
-                    <div class="h-48 sm:h-56">
-                        <canvas id="trendChart"></canvas>
-                    </div>
-                </div>
-            </div>
+<!-- 獨立放到最下方：學生晤談次數統計（全寬度獨立卡片） -->
+<div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-sm">
+    <h3 class="text-xs sm:text-sm font-bold text-slate-800 mb-3 sm:mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-user-graduate text-emerald-500"></i>
+        學生晤談次數統計
+    </h3>
+    <div class="h-64 sm:h-72 w-full overflow-x-auto custom-scrollbar">
+        <div class="h-full min-w-[700px]">
+            <canvas id="trendChart"></canvas>
+        </div>
+    </div>
+</div>
         </div>
 
     </div>
@@ -1918,45 +1922,53 @@ filtered.forEach(r => {
                 }
             });
 
-            // 🌟 學生晤談次數統計圖表 (長條圖)
-            const trendCtx = document.getElementById('trendChart').getContext('2d');
-            if (trendChartInstance) trendChartInstance.destroy();
-            trendChartInstance = new Chart(trendCtx, {
-                type: 'bar',
-                data: { 
-                    labels: studentLabels, 
-                    datasets: [{ 
-                        label: '晤談次數',
-                        data: studentData, 
-                        backgroundColor: '#10b981', 
-                        borderRadius: 4 
-                    }] 
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    plugins: { legend: { display: false } }, 
-                    scales: { 
-                        x: {
-                            ticks: { font: { size: 10 } }
-                        },
-                        y: { 
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: '(次)',
-                                align: 'end',
-                                rotation: 0,
-                                font: { size: 11, weight: 'bold' },
-                                color: '#64748b'
-                            },
-                            ticks: {
-                                precision: 0
-                            }
-                        } 
-                    } 
+            // 🌟 學生晤談次數統計圖表 (長條圖 - 強制顯示全部學生)
+const trendCtx = document.getElementById('trendChart').getContext('2d');
+if (trendChartInstance) trendChartInstance.destroy();
+trendChartInstance = new Chart(trendCtx, {
+    type: 'bar',
+    data: { 
+        labels: studentLabels, 
+        datasets: [{ 
+            label: '晤談次數',
+            data: studentData, 
+            backgroundColor: '#10b981', 
+            borderRadius: 4,
+            barThickness: 20 // 固定的長條寬度，畫面更精緻
+        }] 
+    },
+    options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        plugins: { 
+            legend: { display: false } 
+        }, 
+        scales: { 
+            x: {
+                ticks: { 
+                    font: { size: 11 },
+                    autoSkip: false, // 關鍵：禁止圖表自動跳過/隱藏名字
+                    maxRotation: 45,
+                    minRotation: 45
                 }
-            });
+            },
+            y: { 
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: '(次)',
+                    align: 'end',
+                    rotation: 0,
+                    font: { size: 11, weight: 'bold' },
+                    color: '#64748b'
+                },
+                ticks: {
+                    precision: 0
+                }
+            } 
+        } 
+    }
+});
         }
 
         function format12Hour(timeStr) {
