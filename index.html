@@ -169,13 +169,12 @@
             </div>
         </div>
 
-        <!-- 3. Form Start (新增/編輯服務紀錄) -->
+        <!-- 3. Form Start (新增服務紀錄) -->
         <form id="serviceForm" class="bg-white border border-slate-200 rounded-xl p-4 sm:p-8 shadow-sm space-y-5 sm:space-y-6 overflow-hidden">
-            <input type="hidden" id="editingRecordId" value="">
             <div class="border-b border-slate-100 pb-3 mb-4 flex justify-between items-center gap-2">
                 <h2 class="text-base sm:text-lg font-semibold text-slate-900 flex items-center gap-2 truncate">
                     <i id="formHeaderIcon" class="fa-solid fa-pen-to-square text-sky-800 transition-colors shrink-0"></i>
-                    <span id="formActionTitle" class="truncate">新增紀錄 (<span id="formSemesterBadge" class="font-bold transition-colors">114-1</span> - <span id="formTeacherBadge" class="text-sky-800 font-bold transition-colors">教師</span>)</span>
+                    <span class="truncate">新增紀錄 (<span id="formSemesterBadge" class="font-bold transition-colors">114-1</span> - <span id="formTeacherBadge" class="text-sky-800 font-bold transition-colors">教師</span>)</span>
                 </h2>
                 <button type="button" onclick="addNewStudentPrompt()" 
                         class="shrink-0 px-2.5 py-1.5 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition cursor-pointer border border-slate-200 flex items-center gap-1 shadow-sm">
@@ -336,8 +335,8 @@
             <div class="flex justify-between items-center pt-4 border-t border-slate-100">
                 <button type="submit" id="submitBtn"
                         class="bg-sky-800 hover:bg-sky-900 text-white font-medium px-5 py-2.5 rounded-md shadow-sm transition duration-150 flex items-center space-x-2 text-sm sm:text-base">
-                    <i class="fa-solid fa-check" id="submitBtnIcon"></i>
-                    <span id="submitBtnText">提交紀錄</span>
+                    <i class="fa-solid fa-check"></i>
+                    <span>提交紀錄</span>
                 </button>
                 <button type="button" onclick="resetForm()" class="text-slate-500 hover:text-slate-700 text-xs sm:text-sm font-medium px-3 py-2">
                     清除內容
@@ -496,6 +495,152 @@
 
     </div>
 
+    <!-- 編輯紀錄 Modal (畫面中央小視窗) -->
+    <div id="editRecordModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-xl w-full p-5 sm:p-6 space-y-4 my-8 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-pen-to-square text-sky-800"></i>
+                    <span>編輯服務紀錄</span>
+                </h3>
+                <button type="button" onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <form id="editRecordForm" onsubmit="handleEditFormSubmit(event)" class="space-y-4">
+                <input type="hidden" id="editRecordId">
+
+                <div>
+                    <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
+                        服務學生姓名 <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="editStudentName" required placeholder="學生姓名"
+                           class="w-full px-3 py-2 text-sm border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
+                        服務日期 <span class="text-red-500">*</span>
+                    </label>
+                    <input type="date" id="editServiceDate" required
+                           class="w-full px-3 py-2 text-sm border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">開始時間 <span class="text-red-500">*</span></label>
+                        <input type="time" id="editStartTime" required onchange="calculateEditMinutes()"
+                               class="w-full px-2.5 py-2 text-sm border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">結束時間 <span class="text-red-500">*</span></label>
+                        <input type="time" id="editEndTime" required onchange="calculateEditMinutes()"
+                               class="w-full px-2.5 py-2 text-sm border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">總服務時間（分鐘） <span class="text-red-500">*</span></label>
+                    <input type="number" id="editDurationMinutes" min="1" required
+                           class="w-full px-3 py-2 text-sm border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                </div>
+
+                <hr class="border-slate-100">
+
+                <div>
+                    <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-2">服務對象 <span class="text-red-500">*</span></label>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
+                            <input type="checkbox" name="editTarget" value="學生本人" class="rounded border-slate-300 focus:ring-cyan-500">
+                            <span>學生本人</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
+                            <input type="checkbox" name="editTarget" value="家長" class="rounded border-slate-300 focus:ring-cyan-500">
+                            <span>家長</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
+                            <input type="checkbox" name="editTarget" value="導師" class="rounded border-slate-300 focus:ring-cyan-500">
+                            <span>導師</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
+                            <input type="checkbox" name="editTarget" value="任科教師" class="rounded border-slate-300 focus:ring-cyan-500">
+                            <span>任科教師</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
+                            <input type="checkbox" name="editTarget" value="輔導教師" class="rounded border-slate-300 focus:ring-cyan-500">
+                            <span>輔導教師</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
+                            <input type="checkbox" name="editTarget" value="行政人員" class="rounded border-slate-300 focus:ring-cyan-500">
+                            <span>行政人員</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer col-span-2 sm:col-span-1">
+                            <input type="checkbox" name="editTarget" value="其他相關專業人員" class="rounded border-slate-300 focus:ring-cyan-500">
+                            <span>其他專業人員</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
+                            <input type="checkbox" name="editTarget" value="同儕" class="rounded border-slate-300 focus:ring-cyan-500">
+                            <span>同儕</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-2">間接服務內容 <span class="text-red-500">*</span></label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
+                            <input type="checkbox" name="editContent" value="需求評估與處理" class="rounded border-slate-300 focus:ring-cyan-500">
+                            <span>需求評估與處理</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
+                            <input type="checkbox" name="editContent" value="入班支援" class="rounded border-slate-300 focus:ring-cyan-500">
+                            <span>入班支援</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
+                            <input type="checkbox" name="editContent" value="個別晤談或指導" class="rounded border-slate-300 focus:ring-cyan-500">
+                            <span>個別晤談或指導</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
+                            <input type="checkbox" name="editContent" value="與普教教師合作教學" class="rounded border-slate-300 focus:ring-cyan-500">
+                            <span>與普教教師合作教學</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
+                            <input type="checkbox" name="editContent" value="諮詢服務" class="rounded border-slate-300 focus:ring-cyan-500">
+                            <span>諮詢服務</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
+                            <input type="checkbox" name="editContent" value="參與專業服務" class="rounded border-slate-300 focus:ring-cyan-500">
+                            <span>參與專業服務</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer sm:col-span-2">
+                            <input type="checkbox" name="editContent" value="其他特殊教育相關服務事項" class="rounded border-slate-300 focus:ring-cyan-500">
+                            <span>其他特殊教育相關服務事項</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">備註</label>
+                    <textarea id="editNotes" rows="2" placeholder="請輸入備註內容..." 
+                              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500"></textarea>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                    <button type="button" onclick="closeEditModal()" 
+                            class="px-4 py-2 text-xs sm:text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md font-medium transition">
+                        取消
+                    </button>
+                    <button type="submit" 
+                            class="px-5 py-2 text-xs sm:text-sm bg-sky-800 hover:bg-sky-900 text-white rounded-md font-medium transition flex items-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>更新儲存</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Modal 區塊 (學期、教師管理與 Alert) -->
     <div id="semesterModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full p-5 sm:p-6 space-y-4">
@@ -550,7 +695,7 @@
     </div>
 
     <script>
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyRJReVazJDjmi9CQPBh8WDRO0QTMHUsQfd2h6Q_8ISHo8LsxcBShY1tBbmNU5DG4o4aA/exec";
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyFg296Y3zQEujFizAQctMB4HQhes0iB6u_q3o2T1WKGeNbfie7LUo6z1Em6rZuFovA/exec";
 
         const defaultSemesters = [];
         let semesters = [];
@@ -853,7 +998,6 @@
             document.getElementById('formSemesterBadge').innerText = val;
             document.getElementById('tableSemesterTitle').innerText = val;
 
-            resetForm();
             render();
         }
 
@@ -933,7 +1077,6 @@
             document.getElementById('formTeacherBadge').innerText = val ? `${val}老師` : "教師";
             document.getElementById('tableTeacherTitle').innerText = val ? `${val}老師` : "教師紀錄";
 
-            resetForm();
             applyDynamicTheme();
             updateFilterStudentDropdown();
             render();
@@ -1176,6 +1319,19 @@
             }
         }
 
+        function calculateEditMinutes() {
+            const startVal = document.getElementById('editStartTime').value;
+            const endVal = document.getElementById('editEndTime').value;
+            if (startVal && endVal) {
+                const [startH, startM] = startVal.split(':').map(Number);
+                const [endH, endM] = endVal.split(':').map(Number);
+                let startTotal = startH * 60 + startM;
+                let endTotal = endH * 60 + endM;
+                if (endTotal < startTotal) endTotal += 24 * 60;
+                document.getElementById('editDurationMinutes').value = Math.max(0, endTotal - startTotal);
+            }
+        }
+
         document.getElementById('serviceForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -1217,35 +1373,90 @@
                 syncConfigToGAS();
             }
 
-            const editingId = document.getElementById('editingRecordId').value;
+            const record = {
+                id: Date.now(),
+                semester: currentSemester,
+                teacherName: currentTeacher,
+                studentName: studentName,
+                serviceDate: serviceDate,
+                startTime: startTime,
+                endTime: endTime,
+                durationMinutes: parseInt(durationMinutes) || 0,
+                targets: targets,
+                contents: contents,
+                notes: document.getElementById('notes').value.trim(),
+                createdAt: new Date().toLocaleString('zh-TW')
+            };
 
-            if (editingId) {
-                // 編輯模式：更新既存紀錄
-                const idx = records.findIndex(r => String(r.id) === String(editingId));
-                if (idx !== -1) {
-                    records[idx] = {
-                        ...records[idx],
-                        semester: currentSemester,
-                        teacherName: currentTeacher,
-                        studentName: studentName,
-                        serviceDate: serviceDate,
-                        startTime: startTime,
-                        endTime: endTime,
-                        durationMinutes: parseInt(durationMinutes) || 0,
-                        targets: targets,
-                        contents: contents,
-                        notes: document.getElementById('notes').value.trim()
-                    };
-                    saveRecordsLocal();
-                    syncRecordToGAS(records[idx]);
-                    showToast(`[${currentSemester}] 服務紀錄已成功更新！`, 'success');
-                }
-            } else {
-                // 新增模式：建立新紀錄
-                const record = {
-                    id: Date.now(),
-                    semester: currentSemester,
-                    teacherName: currentTeacher,
+            records.push(record);
+            saveRecordsLocal();
+            syncRecordToGAS(record);
+
+            render();
+            resetForm();
+            showToast(`[${currentSemester}] 服務紀錄新增成功！`, 'success');
+        });
+
+        // 開啟彈出式小視窗進行編輯
+        function editRecord(id) {
+            const record = records.find(r => String(r.id) === String(id));
+            if (!record) return;
+
+            document.getElementById('editRecordId').value = record.id;
+            document.getElementById('editStudentName').value = record.studentName || '';
+            document.getElementById('editServiceDate').value = record.serviceDate || '';
+            document.getElementById('editStartTime').value = record.startTime || '';
+            document.getElementById('editEndTime').value = record.endTime || '';
+            document.getElementById('editDurationMinutes').value = record.durationMinutes || 0;
+            document.getElementById('editNotes').value = record.notes || '';
+
+            document.querySelectorAll('input[name="editTarget"]').forEach(cb => {
+                cb.checked = record.targets ? record.targets.includes(cb.value) : false;
+            });
+
+            document.querySelectorAll('input[name="editContent"]').forEach(cb => {
+                cb.checked = record.contents ? record.contents.includes(cb.value) : false;
+            });
+
+            document.getElementById('editRecordModal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editRecordModal').classList.add('hidden');
+        }
+
+        // 提交小視窗的編輯表單
+        async function handleEditFormSubmit(e) {
+            e.preventDefault();
+
+            const editingId = document.getElementById('editRecordId').value;
+            const studentName = document.getElementById('editStudentName').value.trim();
+            const serviceDate = document.getElementById('editServiceDate').value;
+            const startTime = document.getElementById('editStartTime').value;
+            const endTime = document.getElementById('editEndTime').value;
+            const durationMinutes = document.getElementById('editDurationMinutes').value;
+
+            const targets = Array.from(document.querySelectorAll('input[name="editTarget"]:checked')).map(cb => cb.value);
+            const contents = Array.from(document.querySelectorAll('input[name="editContent"]:checked')).map(cb => cb.value);
+
+            const missingItems = [];
+            if (!studentName) missingItems.push('請輸入「服務學生姓名」');
+            if (!serviceDate) missingItems.push('請選擇「服務日期」');
+            if (!startTime || !endTime || !durationMinutes || parseInt(durationMinutes) <= 0) {
+                missingItems.push('請設定正確的「服務時間與分鐘數」');
+            }
+            if (targets.length === 0) missingItems.push('請至少勾選一項「服務對象」');
+            if (contents.length === 0) missingItems.push('請至少勾選一項「間接服務內容」');
+
+            if (missingItems.length > 0) {
+                showAlertModal(missingItems);
+                return;
+            }
+
+            const idx = records.findIndex(r => String(r.id) === String(editingId));
+            if (idx !== -1) {
+                records[idx] = {
+                    ...records[idx],
                     studentName: studentName,
                     serviceDate: serviceDate,
                     startTime: startTime,
@@ -1253,63 +1464,30 @@
                     durationMinutes: parseInt(durationMinutes) || 0,
                     targets: targets,
                     contents: contents,
-                    notes: document.getElementById('notes').value.trim(),
-                    createdAt: new Date().toLocaleString('zh-TW')
+                    notes: document.getElementById('editNotes').value.trim()
                 };
 
-                records.push(record);
                 saveRecordsLocal();
-                syncRecordToGAS(record);
-                showToast(`[${currentSemester}] 服務紀錄新增成功！`, 'success');
+                syncRecordToGAS(records[idx]);
+
+                const teacherStudents = getCurrentTeacherStudents();
+                if (studentName && !teacherStudents.includes(studentName)) {
+                    teacherStudents.push(studentName);
+                    saveStudentMapLocal();
+                    syncConfigToGAS();
+                }
+
+                closeEditModal();
+                render();
+                showToast('紀錄已成功更新！', 'success');
             }
-
-            render();
-            resetForm();
-        });
-
-        function editRecord(id) {
-            const record = records.find(r => String(r.id) === String(id));
-            if (!record) return;
-
-            document.getElementById('editingRecordId').value = record.id;
-            document.getElementById('studentName').value = record.studentName || '';
-            document.getElementById('serviceDate').value = record.serviceDate || '';
-            document.getElementById('startTime').value = record.startTime || '';
-            document.getElementById('endTime').value = record.endTime || '';
-            document.getElementById('durationMinutes').value = record.durationMinutes || 0;
-            document.getElementById('notes').value = record.notes || '';
-
-            document.querySelectorAll('input[name="target"]').forEach(cb => {
-                cb.checked = record.targets ? record.targets.includes(cb.value) : false;
-            });
-
-            document.querySelectorAll('input[name="content"]').forEach(cb => {
-                cb.checked = record.contents ? record.contents.includes(cb.value) : false;
-            });
-
-            // 切換 UI 提示狀態為「編輯模式」
-            document.getElementById('formActionTitle').innerHTML = `編輯紀錄 (<span id="formSemesterBadge" class="font-bold transition-colors">${currentSemester}</span> - <span id="formTeacherBadge" class="text-sky-800 font-bold transition-colors">${currentTeacher}老師</span>)`;
-            document.getElementById('submitBtnText').innerText = "更新紀錄";
-            document.getElementById('submitBtnIcon').className = "fa-solid fa-floppy-disk";
-
-            applyDynamicTheme();
-
-            // 平滑滾動至表單處
-            document.getElementById('serviceForm').scrollIntoView({ behavior: 'smooth' });
         }
 
         function resetForm() {
             document.getElementById('serviceForm').reset();
-            document.getElementById('editingRecordId').value = '';
             document.getElementById('serviceDate').value = new Date().toISOString().split('T')[0];
             document.querySelectorAll('input[name="target"]').forEach(cb => cb.checked = (cb.value === '學生本人'));
             document.getElementById('studentDropdown').classList.add('hidden');
-
-            document.getElementById('formActionTitle').innerHTML = `新增紀錄 (<span id="formSemesterBadge" class="font-bold transition-colors">${currentSemester}</span> - <span id="formTeacherBadge" class="text-sky-800 font-bold transition-colors">${currentTeacher}老師</span>)`;
-            document.getElementById('submitBtnText').innerText = "提交紀錄";
-            document.getElementById('submitBtnIcon').className = "fa-solid fa-check";
-
-            applyDynamicTheme();
         }
 
         async function deleteRecord(id) {
@@ -1317,9 +1495,6 @@
                 records = records.filter(r => String(r.id) !== String(id));
                 saveRecordsLocal();
                 syncRecordToGAS({ action: "delete", id: id });
-                if (String(document.getElementById('editingRecordId').value) === String(id)) {
-                    resetForm();
-                }
                 render();
                 showToast('紀錄已成功刪除', 'info');
             }
@@ -1354,7 +1529,7 @@
 
             const teacherFiltered = getFilteredRecords();
 
-            // 按照「晤談時間先後順序」進行排序 (先按服務日期，再按開始時間由早到晚排序)
+            // 按晤談時間先後順序排列（日期由舊到新，時間由早到晚）
             teacherFiltered.sort((a, b) => {
                 const dateA = a.serviceDate || '';
                 const dateB = b.serviceDate || '';
@@ -1538,7 +1713,6 @@
                 return;
             }
 
-            // 匯出 Excel 前亦確保按照時間排序
             filteredData.sort((a, b) => {
                 const dateA = a.serviceDate || '';
                 const dateB = b.serviceDate || '';
