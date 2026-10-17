@@ -61,6 +61,21 @@
                 justify-content: center !important;
             }
         }
+        /* 美化視窗內滾動條，避免破壞外圍圓角 */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
     </style>
 </head>
 <body class="py-8 px-4 sm:px-6 lg:px-8 text-slate-800">
@@ -497,8 +512,11 @@
 
     <!-- 編輯紀錄 Modal (畫面中央四角圓弧小視窗) -->
     <div id="editRecordModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
-        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-xl w-full p-5 sm:p-6 space-y-4 my-8 max-h-[90vh] overflow-y-auto overflow-hidden">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <!-- 外層 Modal：固定圓角與內陰影，並加上自訂美化滾動條樣式 -->
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-xl w-full p-5 sm:p-6 my-8 max-h-[85vh] flex flex-col overflow-hidden relative">
+            
+            <!-- 頂部標題區 (固定不跟隨滾動) -->
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3 shrink-0">
                 <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
                     <i class="fa-solid fa-pen-to-square text-sky-800"></i>
                     <span>編輯服務紀錄</span>
@@ -508,136 +526,139 @@
                 </button>
             </div>
 
-            <form id="editRecordForm" onsubmit="handleEditFormSubmit(event)" class="space-y-4">
-                <input type="hidden" id="editRecordId">
+            <!-- 表單與內容區 (滾動條放內部，並自訂微型圓角滾動條) -->
+            <div class="overflow-y-auto flex-1 pr-1.5 mt-4 space-y-4 custom-scrollbar">
+                <form id="editRecordForm" onsubmit="handleEditFormSubmit(event)" class="space-y-4">
+                    <input type="hidden" id="editRecordId">
 
-                <div>
-                    <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
-                        服務學生姓名 <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" id="editStudentName" required placeholder="學生姓名"
-                           class="w-full px-3 py-2 text-sm border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500">
-                </div>
-
-                <div>
-                    <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
-                        服務日期 <span class="text-red-500">*</span>
-                    </label>
-                    <input type="date" id="editServiceDate" required
-                           class="w-full px-3 py-2 text-sm border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500">
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">開始時間 <span class="text-red-500">*</span></label>
-                        <input type="time" id="editStartTime" required onchange="calculateEditMinutes()"
-                               class="w-full px-2.5 py-2 text-sm border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
+                            服務學生姓名 <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="editStudentName" required placeholder="學生姓名"
+                               class="w-full px-3 py-2 text-sm border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500">
                     </div>
+
                     <div>
-                        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">結束時間 <span class="text-red-500">*</span></label>
-                        <input type="time" id="editEndTime" required onchange="calculateEditMinutes()"
-                               class="w-full px-2.5 py-2 text-sm border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
+                            服務日期 <span class="text-red-500">*</span>
+                        </label>
+                        <input type="date" id="editServiceDate" required
+                               class="w-full px-3 py-2 text-sm border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500">
                     </div>
-                </div>
 
-                <div>
-                    <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">總服務時間（分鐘） <span class="text-red-500">*</span></label>
-                    <input type="number" id="editDurationMinutes" min="1" required
-                           class="w-full px-3 py-2 text-sm border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500">
-                </div>
-
-                <hr class="border-slate-100">
-
-                <div>
-                    <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-2">服務對象 <span class="text-red-500">*</span></label>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
-                            <input type="checkbox" name="editTarget" value="學生本人" class="rounded border-slate-300 focus:ring-cyan-500">
-                            <span>學生本人</span>
-                        </label>
-                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
-                            <input type="checkbox" name="editTarget" value="家長" class="rounded border-slate-300 focus:ring-cyan-500">
-                            <span>家長</span>
-                        </label>
-                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
-                            <input type="checkbox" name="editTarget" value="導師" class="rounded border-slate-300 focus:ring-cyan-500">
-                            <span>導師</span>
-                        </label>
-                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
-                            <input type="checkbox" name="editTarget" value="任科教師" class="rounded border-slate-300 focus:ring-cyan-500">
-                            <span>任科教師</span>
-                        </label>
-                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
-                            <input type="checkbox" name="editTarget" value="輔導教師" class="rounded border-slate-300 focus:ring-cyan-500">
-                            <span>輔導教師</span>
-                        </label>
-                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
-                            <input type="checkbox" name="editTarget" value="行政人員" class="rounded border-slate-300 focus:ring-cyan-500">
-                            <span>行政人員</span>
-                        </label>
-                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer col-span-2 sm:col-span-1">
-                            <input type="checkbox" name="editTarget" value="其他相關專業人員" class="rounded border-slate-300 focus:ring-cyan-500">
-                            <span>其他專業人員</span>
-                        </label>
-                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
-                            <input type="checkbox" name="editTarget" value="同儕" class="rounded border-slate-300 focus:ring-cyan-500">
-                            <span>同儕</span>
-                        </label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">開始時間 <span class="text-red-500">*</span></label>
+                            <input type="time" id="editStartTime" required onchange="calculateEditMinutes()"
+                                   class="w-full px-2.5 py-2 text-sm border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">結束時間 <span class="text-red-500">*</span></label>
+                            <input type="time" id="editEndTime" required onchange="calculateEditMinutes()"
+                                   class="w-full px-2.5 py-2 text-sm border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                        </div>
                     </div>
-                </div>
 
-                <div>
-                    <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-2">間接服務內容 <span class="text-red-500">*</span></label>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
-                            <input type="checkbox" name="editContent" value="需求評估與處理" class="rounded border-slate-300 focus:ring-cyan-500">
-                            <span>需求評估與處理</span>
-                        </label>
-                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
-                            <input type="checkbox" name="editContent" value="入班支援" class="rounded border-slate-300 focus:ring-cyan-500">
-                            <span>入班支援</span>
-                        </label>
-                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
-                            <input type="checkbox" name="editContent" value="個別晤談或指導" class="rounded border-slate-300 focus:ring-cyan-500">
-                            <span>個別晤談或指導</span>
-                        </label>
-                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
-                            <input type="checkbox" name="editContent" value="與普教教師合作教學" class="rounded border-slate-300 focus:ring-cyan-500">
-                            <span>與普教教師合作教學</span>
-                        </label>
-                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
-                            <input type="checkbox" name="editContent" value="諮詢服務" class="rounded border-slate-300 focus:ring-cyan-500">
-                            <span>諮詢服務</span>
-                        </label>
-                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
-                            <input type="checkbox" name="editContent" value="參與專業服務" class="rounded border-slate-300 focus:ring-cyan-500">
-                            <span>參與專業服務</span>
-                        </label>
-                        <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer sm:col-span-2">
-                            <input type="checkbox" name="editContent" value="其他特殊教育相關服務事項" class="rounded border-slate-300 focus:ring-cyan-500">
-                            <span>其他特殊教育相關服務事項</span>
-                        </label>
+                    <div>
+                        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">總服務時間（分鐘） <span class="text-red-500">*</span></label>
+                        <input type="number" id="editDurationMinutes" min="1" required
+                               class="w-full px-3 py-2 text-sm border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500">
                     </div>
-                </div>
 
-                <div>
-                    <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">備註</label>
-                    <textarea id="editNotes" rows="2" placeholder="請輸入備註內容..." 
-                              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500"></textarea>
-                </div>
+                    <hr class="border-slate-100">
 
-                <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
-                    <button type="button" onclick="closeEditModal()" 
-                            class="px-4 py-2 text-xs sm:text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition">
-                        取消
-                    </button>
-                    <button type="submit" 
-                            class="px-5 py-2 text-xs sm:text-sm bg-sky-800 hover:bg-sky-900 text-white rounded-xl font-medium transition flex items-center gap-1.5 shadow-sm">
-                        <i class="fa-solid fa-floppy-disk"></i>
-                        <span>更新儲存</span>
-                    </button>
-                </div>
-            </form>
+                    <div>
+                        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-2">服務對象 <span class="text-red-500">*</span></label>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
+                                <input type="checkbox" name="editTarget" value="學生本人" class="rounded border-slate-300 focus:ring-cyan-500">
+                                <span>學生本人</span>
+                            </label>
+                            <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
+                                <input type="checkbox" name="editTarget" value="家長" class="rounded border-slate-300 focus:ring-cyan-500">
+                                <span>家長</span>
+                            </label>
+                            <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
+                                <input type="checkbox" name="editTarget" value="導師" class="rounded border-slate-300 focus:ring-cyan-500">
+                                <span>導師</span>
+                            </label>
+                            <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
+                                <input type="checkbox" name="editTarget" value="任科教師" class="rounded border-slate-300 focus:ring-cyan-500">
+                                <span>任科教師</span>
+                            </label>
+                            <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
+                                <input type="checkbox" name="editTarget" value="輔導教師" class="rounded border-slate-300 focus:ring-cyan-500">
+                                <span>輔導教師</span>
+                            </label>
+                            <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
+                                <input type="checkbox" name="editTarget" value="行政人員" class="rounded border-slate-300 focus:ring-cyan-500">
+                                <span>行政人員</span>
+                            </label>
+                            <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer col-span-2 sm:col-span-1">
+                                <input type="checkbox" name="editTarget" value="其他相關專業人員" class="rounded border-slate-300 focus:ring-cyan-500">
+                                <span>其他專業人員</span>
+                            </label>
+                            <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
+                                <input type="checkbox" name="editTarget" value="同儕" class="rounded border-slate-300 focus:ring-cyan-500">
+                                <span>同儕</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-2">間接服務內容 <span class="text-red-500">*</span></label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
+                                <input type="checkbox" name="editContent" value="需求評估與處理" class="rounded border-slate-300 focus:ring-cyan-500">
+                                <span>需求評估與處理</span>
+                            </label>
+                            <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
+                                <input type="checkbox" name="editContent" value="入班支援" class="rounded border-slate-300 focus:ring-cyan-500">
+                                <span>入班支援</span>
+                            </label>
+                            <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
+                                <input type="checkbox" name="editContent" value="個別晤談或指導" class="rounded border-slate-300 focus:ring-cyan-500">
+                                <span>個別晤談或指導</span>
+                            </label>
+                            <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
+                                <input type="checkbox" name="editContent" value="與普教教師合作教學" class="rounded border-slate-300 focus:ring-cyan-500">
+                                <span>與普教教師合作教學</span>
+                            </label>
+                            <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
+                                <input type="checkbox" name="editContent" value="諮詢服務" class="rounded border-slate-300 focus:ring-cyan-500">
+                                <span>諮詢服務</span>
+                            </label>
+                            <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer">
+                                <input type="checkbox" name="editContent" value="參與專業服務" class="rounded border-slate-300 focus:ring-cyan-500">
+                                <span>參與專業服務</span>
+                            </label>
+                            <label class="flex items-center space-x-1.5 text-xs text-slate-700 cursor-pointer sm:col-span-2">
+                                <input type="checkbox" name="editContent" value="其他特殊教育相關服務事項" class="rounded border-slate-300 focus:ring-cyan-500">
+                                <span>其他特殊教育相關服務事項</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">備註</label>
+                        <textarea id="editNotes" rows="2" placeholder="請輸入備註內容..." 
+                                  class="w-full px-3 py-2 text-sm border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500"></textarea>
+                    </div>
+
+                    <div class="flex justify-end gap-2 pt-3 border-t border-slate-100 pb-1">
+                        <button type="button" onclick="closeEditModal()" 
+                                class="px-4 py-2 text-xs sm:text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition">
+                            取消
+                        </button>
+                        <button type="submit" 
+                                class="px-5 py-2 text-xs sm:text-sm bg-sky-800 hover:bg-sky-900 text-white rounded-xl font-medium transition flex items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            <span>更新儲存</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
