@@ -402,19 +402,20 @@
                 </div>
             </div>
 
-            <div class="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+            <!-- 表格容器：透過 JavaScript 控制超過 10 筆時顯示垂直滾動條 (custom-scrollbar) -->
+            <div id="tableContainer" class="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 custom-scrollbar">
                 <table class="w-full text-left border-collapse min-w-[700px]">
                     <thead>
-                        <tr class="bg-slate-50/80 text-slate-600 text-xs font-bold border-b border-slate-200">
-                            <th class="p-3 whitespace-nowrap">學期</th>
-                            <th class="p-3 whitespace-nowrap">學生</th>
-                            <th class="p-3 whitespace-nowrap">日期</th>
-                            <th class="p-3 whitespace-nowrap">晤談時間</th>
-                            <th class="p-3 whitespace-nowrap">時間與時數</th>
-                            <th class="p-3 whitespace-nowrap">服務對象</th>
-                            <th class="p-3 whitespace-nowrap">間接服務內容</th>
-                            <th class="p-3 whitespace-nowrap">備註</th>
-                            <th class="p-3 text-center whitespace-nowrap">操作</th>
+                        <tr class="bg-slate-50/80 text-slate-600 text-xs font-bold border-b border-slate-200 sticky top-0 z-10">
+                            <th class="p-3 whitespace-nowrap bg-slate-50">學期</th>
+                            <th class="p-3 whitespace-nowrap bg-slate-50">學生</th>
+                            <th class="p-3 whitespace-nowrap bg-slate-50">日期</th>
+                            <th class="p-3 whitespace-nowrap bg-slate-50">晤談時間</th>
+                            <th class="p-3 whitespace-nowrap bg-slate-50">時間與時數</th>
+                            <th class="p-3 whitespace-nowrap bg-slate-50">服務對象</th>
+                            <th class="p-3 whitespace-nowrap bg-slate-50">間接服務內容</th>
+                            <th class="p-3 whitespace-nowrap bg-slate-50">備註</th>
+                            <th class="p-3 text-center whitespace-nowrap bg-slate-50">操作</th>
                         </tr>
                     </thead>
                     <tbody id="recordsTableBody" class="divide-y divide-slate-100 text-sm text-slate-700">
@@ -716,7 +717,7 @@
     </div>
 
     <script>
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyFg296Y3zQEujFizAQctMB4HQhes0iB6u_q3o2T1WKGeNbfie7LUo6z1Em6rZuFovA/exec";
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyRJReVazJDjmi9CQPBh8WDRO0QTMHUsQfd2h6Q_8ISHo8LsxcBShY1tBbmNU5DG4o4aA/exec";
 
         const defaultSemesters = [];
         let semesters = [];
@@ -1544,6 +1545,7 @@
             const theme = getCurrentTheme();
             const tableBody = document.getElementById('recordsTableBody');
             const noData = document.getElementById('noDataMessage');
+            const tableContainer = document.getElementById('tableContainer');
 
             const query = (document.getElementById('searchQuery').value || '').trim().toLowerCase();
             const studentFilter = document.getElementById('filterStudent').value;
@@ -1569,6 +1571,13 @@
                 const matchesStudent = (studentFilter === 'ALL') || (r.studentName === studentFilter);
                 return matchesQuery && matchesStudent;
             });
+
+            // 當搜尋/過濾後的筆數超過 10 筆時，加入最大高度與垂直滾動條；否則恢復自動高度
+            if (finalFiltered.length > 10) {
+                tableContainer.classList.add('max-h-[500px]', 'overflow-y-auto');
+            } else {
+                tableContainer.classList.remove('max-h-[500px]', 'overflow-y-auto');
+            }
 
             tableBody.innerHTML = '';
 
