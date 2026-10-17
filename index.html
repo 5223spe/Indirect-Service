@@ -84,8 +84,8 @@
         }
 
         .record-highlight-active {
-            animation: highlight-pulse 1.2s infinite ease-in-out;
-        }
+    background-color: rgba(167, 243, 208, 0.7) !important; /* 淺綠色 (emerald-200) */
+}
     </style>
 </head>
 <body class="py-8 px-4 sm:px-6 lg:px-8 text-slate-800">
@@ -1456,14 +1456,14 @@
             resetForm();
             showToast(`[${currentSemester}] 服務紀錄新增成功！`, 'success');
 
-            // 🌟 新增：自動平滑滾動至新增紀錄，並掛載「滾動即熄滅」監聽
+            // 自動平滑滾動至新增紀錄，並維持亮著直到滾動才熄滅
             setTimeout(() => {
                 const newRow = document.getElementById(`record-row-${record.id}`);
                 if (newRow) {
                     // 1. 平滑滾動到該列
                     newRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     
-                    // 2. 加上持續脈衝閃爍效果
+                    // 2. 加上持續亮著的高亮效果
                     newRow.classList.add('record-highlight-active');
 
                     // 3. 建立移除高亮效果的函式
@@ -1480,7 +1480,7 @@
                         }
                     };
 
-                    // 4. 延遲 400ms 後掛載滾動/滑動事件（避開平滑滾動自身的自動運動）
+                    // 4. 延遲 400ms 後掛載滾動/滑動事件（避開自動平滑滾動時的觸發）
                     setTimeout(() => {
                         window.addEventListener('wheel', removeHighlight, { passive: true });
                         window.addEventListener('touchmove', removeHighlight, { passive: true });
