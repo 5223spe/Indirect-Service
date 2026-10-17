@@ -77,15 +77,15 @@
             background: #94a3b8;
         }
 
-        /* 🌟 新增：歷史紀錄新增時的持續脈衝閃爍效果 */
+        /* 🌟 歷史紀錄新增時的持續脈衝閃爍效果 */
         @keyframes highlight-pulse {
             0%, 100% { background-color: rgba(167, 243, 208, 0.85); } /* 淺綠色 */
             50% { background-color: rgba(236, 253, 245, 0.3); }      /* 超淺綠 */
         }
 
         .record-highlight-active {
-    background-color: rgba(167, 243, 208, 0.7) !important; /* 淺綠色 (emerald-200) */
-}
+            background-color: rgba(167, 243, 208, 0.7) !important; /* 淺綠色 (emerald-200) */
+        }
     </style>
 </head>
 <body class="py-8 px-4 sm:px-6 lg:px-8 text-slate-800">
@@ -412,7 +412,7 @@
                 </div>
             </div>
 
-            <!-- 表格容器：透過 JavaScript 控制超過 10 筆時顯示垂直滾動條 (custom-scrollbar) -->
+            <!-- 表格容器 -->
             <div id="tableContainer" class="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 custom-scrollbar">
                 <table class="w-full text-left border-collapse min-w-[700px]">
                     <thead>
@@ -509,8 +509,8 @@
 
                 <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-sm">
                     <h3 class="text-xs sm:text-sm font-bold text-slate-800 mb-3 sm:mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-chart-line text-emerald-500"></i>
-                        月度服務時間趨勢
+                        <i class="fa-solid fa-user-graduate text-emerald-500"></i>
+                        學生晤談次數統計
                     </h3>
                     <div class="h-48 sm:h-56">
                         <canvas id="trendChart"></canvas>
@@ -744,7 +744,7 @@
         </div>
     </div>
 
-    <!-- 調整為螢幕中央顯示的 Toast 提示框 -->
+    <!-- 螢幕中央 Toast 提示框 -->
     <div id="toast" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900/90 text-white px-6 py-3.5 rounded-2xl shadow-2xl backdrop-blur-md transform scale-90 opacity-0 transition-all duration-300 pointer-events-none flex items-center justify-center space-x-2.5 text-sm sm:text-base z-[100] border border-slate-700/50">
         <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-lg sm:text-xl"></i>
         <span id="toastMsg" class="font-medium">紀錄新增成功！</span>
@@ -1448,7 +1448,6 @@
             saveRecordsLocal();
             syncRecordToGAS(record);
 
-            // 清空搜尋與篩選，確保新新增的紀錄不會被過濾掉
             document.getElementById('searchQuery').value = '';
             document.getElementById('filterStudent').value = 'ALL';
 
@@ -1456,17 +1455,12 @@
             resetForm();
             showToast(`[${currentSemester}] 服務紀錄新增成功！`, 'success');
 
-            // 自動平滑滾動至新增紀錄，並維持亮著直到滾動才熄滅
             setTimeout(() => {
                 const newRow = document.getElementById(`record-row-${record.id}`);
                 if (newRow) {
-                    // 1. 平滑滾動到該列
                     newRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    
-                    // 2. 加上持續亮著的高亮效果
                     newRow.classList.add('record-highlight-active');
 
-                    // 3. 建立移除高亮效果的函式
                     const removeHighlight = () => {
                         newRow.classList.remove('record-highlight-active');
                         window.removeEventListener('wheel', removeHighlight);
@@ -1480,7 +1474,6 @@
                         }
                     };
 
-                    // 4. 延遲 400ms 後掛載滾動/滑動事件（避開自動平滑滾動時的觸發）
                     setTimeout(() => {
                         window.addEventListener('wheel', removeHighlight, { passive: true });
                         window.addEventListener('touchmove', removeHighlight, { passive: true });
@@ -1489,6 +1482,7 @@
                 }
             }, 100);
         });
+
         function editRecord(id) {
             const record = records.find(r => String(r.id) === String(id));
             if (!record) return;
@@ -1861,15 +1855,21 @@
             };
             filtered.forEach(r => { if (r.contents) r.contents.forEach(c => { if (contentCounts[c] !== undefined) contentCounts[c]++; }); });
 
-            const monthTrend = {};
+            // 🌟 統計學生一整學期的晤談次數
+            const studentCounts = {};
+            // 先加入目前教師的所有學生，預設次數為 0
+            const currentStudentList = getCurrentTeacherStudents();
+            currentStudentList.forEach(s => { studentCounts[s] = 0; });
+
+            // 計算學期內各學生的晤談次數
             filtered.forEach(r => {
-                if (r.serviceDate) {
-                    const m = r.serviceDate.substring(0, 7);
-                    monthTrend[m] = (monthTrend[m] || 0) + (parseInt(r.durationMinutes) || 0);
+                if (r.studentName) {
+                    studentCounts[r.studentName] = (studentCounts[r.studentName] || 0) + 1;
                 }
             });
-            const sortedMonths = Object.keys(monthTrend).sort();
-            if (sortedMonths.length === 0) { sortedMonths.push(currentMonthStr); monthTrend[currentMonthStr] = 0; }
+
+            const studentLabels = Object.keys(studentCounts);
+            const studentData = Object.values(studentCounts);
 
             const targetCtx = document.getElementById('targetChart').getContext('2d');
             if (targetChartInstance) targetChartInstance.destroy();
@@ -1912,25 +1912,40 @@
                 }
             });
 
+            // 🌟 學生晤談次數統計圖表 (長條圖)
             const trendCtx = document.getElementById('trendChart').getContext('2d');
             if (trendChartInstance) trendChartInstance.destroy();
             trendChartInstance = new Chart(trendCtx, {
-                type: 'line',
-                data: { labels: sortedMonths, datasets: [{ data: sortedMonths.map(m => monthTrend[m]), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 2, fill: true }] },
+                type: 'bar',
+                data: { 
+                    labels: studentLabels, 
+                    datasets: [{ 
+                        label: '晤談次數',
+                        data: studentData, 
+                        backgroundColor: '#10b981', 
+                        borderRadius: 4 
+                    }] 
+                },
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false, 
                     plugins: { legend: { display: false } }, 
                     scales: { 
+                        x: {
+                            ticks: { font: { size: 10 } }
+                        },
                         y: { 
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: '(分鐘)',
+                                text: '(次)',
                                 align: 'end',
                                 rotation: 0,
                                 font: { size: 11, weight: 'bold' },
                                 color: '#64748b'
+                            },
+                            ticks: {
+                                precision: 0
                             }
                         } 
                     } 
@@ -2125,7 +2140,6 @@
             showToast('Excel 匯出成功！', 'success');
         }
 
-        // 修改後的 Toast 函式 (顯示於螢幕中央)
         function showToast(msg, type = 'success') {
             const toast = document.getElementById('toast');
             const toastMsg = document.getElementById('toastMsg');
