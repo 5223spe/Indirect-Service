@@ -1856,17 +1856,23 @@
             filtered.forEach(r => { if (r.contents) r.contents.forEach(c => { if (contentCounts[c] !== undefined) contentCounts[c]++; }); });
 
             // 🌟 統計學生一整學期的晤談次數
-            const studentCounts = {};
-            // 先加入目前教師的所有學生，預設次數為 0
-            const currentStudentList = getCurrentTeacherStudents();
-            currentStudentList.forEach(s => { studentCounts[s] = 0; });
+const studentCounts = {};
 
-            // 計算學期內各學生的晤談次數
-            filtered.forEach(r => {
-                if (r.studentName) {
-                    studentCounts[r.studentName] = (studentCounts[r.studentName] || 0) + 1;
-                }
-            });
+// 1. 強制載入「快速選擇/名單」中的每一個學生，初始值設為 0
+const currentStudentList = getCurrentTeacherStudents();
+if (Array.isArray(currentStudentList)) {
+    currentStudentList.forEach(s => {
+        if (s) studentCounts[s] = 0;
+    });
+}
+
+// 2. 累加當前學期有晤談紀錄的次數
+filtered.forEach(r => {
+    if (r.studentName) {
+        // 若學生未在名單內但有歷史紀錄，也一併納入統計
+        studentCounts[r.studentName] = (studentCounts[r.studentName] || 0) + 1;
+    }
+});
 
             const studentLabels = Object.keys(studentCounts);
             const studentData = Object.values(studentCounts);
