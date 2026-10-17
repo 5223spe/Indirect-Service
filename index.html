@@ -734,10 +734,11 @@
         </div>
     </div>
 
+    <!-- 調整為螢幕中央顯示的 Toast 提示框 -->
     <div id="toast" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900/90 text-white px-6 py-3.5 rounded-2xl shadow-2xl backdrop-blur-md transform scale-90 opacity-0 transition-all duration-300 pointer-events-none flex items-center justify-center space-x-2.5 text-sm sm:text-base z-[100] border border-slate-700/50">
-    <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-lg sm:text-xl"></i>
-    <span id="toastMsg" class="font-medium">紀錄新增成功！</span>
-</div>
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-lg sm:text-xl"></i>
+        <span id="toastMsg" class="font-medium">紀錄新增成功！</span>
+    </div>
 
     <script>
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyRJReVazJDjmi9CQPBh8WDRO0QTMHUsQfd2h6Q_8ISHo8LsxcBShY1tBbmNU5DG4o4aA/exec";
@@ -1437,31 +1438,26 @@
             saveRecordsLocal();
             syncRecordToGAS(record);
 
-            // 1. 清空表格篩選條件，確保新新增的紀錄一定會顯示在表格中
-document.getElementById('searchQuery').value = '';
-document.getElementById('filterStudent').value = 'ALL';
+            // 清空搜尋與篩選，確保新新增的紀錄不會被過濾掉
+            document.getElementById('searchQuery').value = '';
+            document.getElementById('filterStudent').value = 'ALL';
 
-// 2. 重新繪製表格與統計
-render();
-resetForm();
+            render();
+            resetForm();
+            showToast(`[${currentSemester}] 服務紀錄新增成功！`, 'success');
 
-// 3. 彈出中央成功通知
-showToast(`[${currentSemester}] 服務紀錄新增成功！`, 'success');
-
-// 4. 平滑滾動並高亮新新增的紀錄
-setTimeout(() => {
-    const newRow = document.getElementById(`record-row-${record.id}`);
-    if (newRow) {
-        // 平滑滾動到該列
-        newRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        
-        // 閃爍高亮背景效果 (黃綠色突顯)
-        newRow.classList.add('bg-emerald-100/80');
-        setTimeout(() => {
-            newRow.classList.remove('bg-emerald-100/80');
-        }, 2000);
-    }
-}, 100);
+            // 自動平滑滾動至新增紀錄並高亮提示
+            setTimeout(() => {
+                const newRow = document.getElementById(`record-row-${record.id}`);
+                if (newRow) {
+                    newRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    newRow.classList.add('bg-emerald-100/80');
+                    setTimeout(() => {
+                        newRow.classList.remove('bg-emerald-100/80');
+                    }, 2000);
+                }
+            }, 100);
+        });
 
         function editRecord(id) {
             const record = records.find(r => String(r.id) === String(id));
@@ -1734,7 +1730,7 @@ setTimeout(() => {
 
                     const tr = document.createElement('tr');
                     tr.id = `record-row-${r.id}`;
-                    tr.className = "hover:bg-slate-50/60 transition";
+                    tr.className = "hover:bg-slate-50/60 transition duration-500";
                     tr.innerHTML = `
                         <td class="p-3 whitespace-nowrap font-bold text-xs align-top">
                             <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
@@ -1853,7 +1849,6 @@ setTimeout(() => {
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } }, cutout: '60%' }
             });
 
-            // 調整單位 (次) 水平置於縱軸上方
             const contentCtx = document.getElementById('contentChart').getContext('2d');
             if (contentChartInstance) contentChartInstance.destroy();
             contentChartInstance = new Chart(contentCtx, {
@@ -1874,20 +1869,19 @@ setTimeout(() => {
                             title: {
                                 display: true,
                                 text: '(次)',
-                                align: 'end',       // 靠縱軸最上方
-                                rotation: 0,        // 水平不旋轉
+                                align: 'end',
+                                rotation: 0,
                                 font: { size: 11, weight: 'bold' },
                                 color: '#64748b'
                             },
                             ticks: {
-                                precision: 0 // 強制以整數顯示
+                                precision: 0
                             }
                         } 
                     } 
                 }
             });
 
-            // 月度服務時間趨勢圖表：同步設定 (分鐘) 靠上方水平顯示
             const trendCtx = document.getElementById('trendChart').getContext('2d');
             if (trendChartInstance) trendChartInstance.destroy();
             trendChartInstance = new Chart(trendCtx, {
@@ -2101,31 +2095,30 @@ setTimeout(() => {
             showToast('Excel 匯出成功！', 'success');
         }
 
+        // 修改後的 Toast 函式 (顯示於螢幕中央)
         function showToast(msg, type = 'success') {
-    const toast = document.getElementById('toast');
-    const toastMsg = document.getElementById('toastMsg');
-    const toastIcon = document.getElementById('toastIcon');
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            const toastIcon = document.getElementById('toastIcon');
 
-    toastMsg.innerText = msg;
+            toastMsg.innerText = msg;
 
-    if (type === 'error') {
-        toastIcon.className = "fa-solid fa-circle-xmark text-red-400 text-lg sm:text-xl";
-    } else if (type === 'info') {
-        toastIcon.className = "fa-solid fa-circle-info text-sky-400 text-lg sm:text-xl";
-    } else {
-        toastIcon.className = "fa-solid fa-circle-check text-emerald-400 text-lg sm:text-xl";
-    }
+            if (type === 'error') {
+                toastIcon.className = "fa-solid fa-circle-xmark text-red-400 text-lg sm:text-xl";
+            } else if (type === 'info') {
+                toastIcon.className = "fa-solid fa-circle-info text-sky-400 text-lg sm:text-xl";
+            } else {
+                toastIcon.className = "fa-solid fa-circle-check text-emerald-400 text-lg sm:text-xl";
+            }
 
-    // 顯示動畫（放大 + 淡入）
-    toast.classList.remove('scale-90', 'opacity-0', 'pointer-events-none');
-    toast.classList.add('scale-100', 'opacity-100');
+            toast.classList.remove('scale-90', 'opacity-0', 'pointer-events-none');
+            toast.classList.add('scale-100', 'opacity-100');
 
-    setTimeout(() => {
-        // 隱藏動畫
-        toast.classList.remove('scale-100', 'opacity-100');
-        toast.classList.add('scale-90', 'opacity-0', 'pointer-events-none');
-    }, 2000);
-}
+            setTimeout(() => {
+                toast.classList.remove('scale-100', 'opacity-100');
+                toast.classList.add('scale-90', 'opacity-0', 'pointer-events-none');
+            }, 2000);
+        }
 
         function escapeHtml(str) {
             return str ? str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : '';
