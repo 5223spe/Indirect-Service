@@ -508,14 +508,14 @@
                 </div>
 
                 <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-sm">
-                    <h3 class="text-xs sm:text-sm font-bold text-slate-800 mb-3 sm:mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-chart-line text-emerald-500"></i>
-                        月度服務時間趨勢
-                    </h3>
-                    <div class="h-48 sm:h-56">
-                        <canvas id="trendChart"></canvas>
-                    </div>
-                </div>
+    <h3 class="text-xs sm:text-sm font-bold text-slate-800 mb-3 sm:mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-user-check text-emerald-500"></i>
+        學生晤談次數統計
+    </h3>
+    <div class="h-48 sm:h-56">
+        <canvas id="trendChart"></canvas>
+    </div>
+</div>
             </div>
         </div>
 
@@ -1861,13 +1861,59 @@
             };
             filtered.forEach(r => { if (r.contents) r.contents.forEach(c => { if (contentCounts[c] !== undefined) contentCounts[c]++; }); });
 
-            const monthTrend = {};
-            filtered.forEach(r => {
-                if (r.serviceDate) {
-                    const m = r.serviceDate.substring(0, 7);
-                    monthTrend[m] = (monthTrend[m] || 0) + (parseInt(r.durationMinutes) || 0);
+            // 統計每位學生的晤談/服務次數 (筆數)
+const studentCounts = {};
+filtered.forEach(r => {
+    if (r.studentName) {
+        studentCounts[r.studentName] = (studentCounts[r.studentName] || 0) + 1;
+    }
+});
+
+const studentLabels = Object.keys(studentCounts);
+const studentData = Object.values(studentCounts);
+
+// 渲染學生晤談次數圖表 (長條圖)
+const trendCtx = document.getElementById('trendChart').getContext('2d');
+if (trendChartInstance) trendChartInstance.destroy();
+
+trendChartInstance = new Chart(trendCtx, {
+    type: 'bar',
+    data: { 
+        labels: studentLabels.length > 0 ? studentLabels : ['無資料'], 
+        datasets: [{ 
+            label: '晤談次數',
+            data: studentData.length > 0 ? studentData : [0], 
+            backgroundColor: '#10b981', 
+            borderRadius: 4 
+        }] 
+    },
+    options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        plugins: { 
+            legend: { display: false } 
+        }, 
+        scales: { 
+            x: { 
+                ticks: { font: { size: 10 } } 
+            }, 
+            y: { 
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: '(次)',
+                    align: 'end',
+                    rotation: 0,
+                    font: { size: 11, weight: 'bold' },
+                    color: '#64748b'
+                },
+                ticks: {
+                    precision: 0 // 強制以整數顯示次數
                 }
-            });
+            } 
+        } 
+    }
+});
             const sortedMonths = Object.keys(monthTrend).sort();
             if (sortedMonths.length === 0) { sortedMonths.push(currentMonthStr); monthTrend[currentMonthStr] = 0; }
 
