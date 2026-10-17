@@ -495,9 +495,9 @@
 
     </div>
 
-    <!-- 編輯紀錄 Modal (畫面中央小視窗) -->
+    <!-- 編輯紀錄 Modal (畫面中央四角圓弧小視窗) -->
     <div id="editRecordModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
-        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-xl w-full p-5 sm:p-6 space-y-4 my-8 max-h-[90vh] overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-xl w-full p-5 sm:p-6 space-y-4 my-8 max-h-[90vh] overflow-y-auto overflow-hidden">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                 <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
                     <i class="fa-solid fa-pen-to-square text-sky-800"></i>
@@ -628,11 +628,11 @@
 
                 <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
                     <button type="button" onclick="closeEditModal()" 
-                            class="px-4 py-2 text-xs sm:text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md font-medium transition">
+                            class="px-4 py-2 text-xs sm:text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition">
                         取消
                     </button>
                     <button type="submit" 
-                            class="px-5 py-2 text-xs sm:text-sm bg-sky-800 hover:bg-sky-900 text-white rounded-md font-medium transition flex items-center gap-1.5 shadow-sm">
+                            class="px-5 py-2 text-xs sm:text-sm bg-sky-800 hover:bg-sky-900 text-white rounded-xl font-medium transition flex items-center gap-1.5 shadow-sm">
                         <i class="fa-solid fa-floppy-disk"></i>
                         <span>更新儲存</span>
                     </button>
