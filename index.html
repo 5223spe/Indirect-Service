@@ -454,14 +454,21 @@
                 </div>
 
                 <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-sm flex justify-between items-center">
-                    <div>
-                        <div class="text-xs font-semibold text-slate-400 mb-1">本月服務分鐘</div>
-                        <div class="text-xl sm:text-2xl font-extrabold text-slate-900"><span id="cardMonthMins">0</span>m</div>
-                        <div class="text-xs text-emerald-600 font-medium mt-1 flex items-center gap-1">
-                            <i class="fa-solid fa-calendar-days text-[10px]"></i>
-                            <span>本月累計時數</span>
-                        </div>
-                    </div>
+    <div>
+        <div class="text-xs font-semibold text-slate-400 mb-1">個案平均服務節數 / 次數</div>
+        <div class="text-xl sm:text-2xl font-extrabold text-slate-900">
+            <span id="cardAvgSessions">0</span> 節/人
+            <span class="text-sm font-normal text-slate-500">（<span id="cardAvgTimes">0</span> 次/人）</span>
+        </div>
+        <div class="text-xs text-emerald-600 font-medium mt-1 flex items-center gap-1">
+            <i class="fa-solid fa-graduation-cap text-[10px]"></i>
+            <span>學期個案平均</span>
+        </div>
+    </div>
+    <div class="w-10 h-10 sm:w-11 sm:h-11 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center text-base sm:text-lg">
+        <i class="fa-solid fa-chart-pie"></i>
+    </div>
+</div>
                     <div class="w-10 h-10 sm:w-11 sm:h-11 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center text-base sm:text-lg">
                         <i class="fa-solid fa-chart-pie"></i>
                     </div>
@@ -1829,12 +1836,30 @@
             document.getElementById('cardTotalRecords').innerText = `${totalCount} 筆`;
             document.getElementById('cardAvgMins').innerText = avgMins;
 
-            const currentMonthStr = new Date().toISOString().substring(0, 7);
-            const monthMins = filtered
-                .filter(r => r.serviceDate && r.serviceDate.startsWith(currentMonthStr))
-                .reduce((sum, r) => sum + (parseInt(r.durationMinutes) || 0), 0);
+            // 計算學期個案平均服務節數與次數
+// 1. 取得當前教師名單內的所有學生（確保分子/分母計算精確）
+const currentStudentList = getCurrentTeacherStudents();
+const studentSet = new Set(currentStudentList);
 
-            document.getElementById('cardMonthMins').innerText = monthMins;
+// 2. 若紀錄中有學生不在名單內，也一併納入個案數計算
+filtered.forEach(r => {
+    if (r.studentName) studentSet.add(r.studentName);
+});
+
+const totalCaseCount = studentSet.size; // 個案總人數
+
+// 3. 計算平均節數 (每節50分鐘) 與 平均次數
+let avgSessionsPerCase = 0;
+let avgTimesPerCase = 0;
+
+if (totalCaseCount > 0) {
+    avgSessionsPerCase = ((totalMins / 50) / totalCaseCount).toFixed(1);
+    avgTimesPerCase = (totalCount / totalCaseCount).toFixed(1);
+}
+
+// 4. 更新畫面顯示
+document.getElementById('cardAvgSessions').innerText = avgSessionsPerCase;
+document.getElementById('cardAvgTimes').innerText = avgTimesPerCase;
 
             const goalHours = parseFloat(document.getElementById('goalHoursInput').value) || 40;
             const goalTargetMins = goalHours * 60;
