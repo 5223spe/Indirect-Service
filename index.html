@@ -734,10 +734,10 @@
         </div>
     </div>
 
-    <div id="toast" class="fixed bottom-5 right-5 left-5 sm:left-auto bg-slate-900 text-white px-4 py-3 rounded-md shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 flex items-center justify-center sm:justify-start space-x-2 text-xs sm:text-sm z-50">
-        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
-        <span id="toastMsg">紀錄新增成功！</span>
-    </div>
+    <div id="toast" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900/90 text-white px-6 py-3.5 rounded-2xl shadow-2xl backdrop-blur-md transform scale-90 opacity-0 transition-all duration-300 pointer-events-none flex items-center justify-center space-x-2.5 text-sm sm:text-base z-[100] border border-slate-700/50">
+    <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-lg sm:text-xl"></i>
+    <span id="toastMsg" class="font-medium">紀錄新增成功！</span>
+</div>
 
     <script>
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyRJReVazJDjmi9CQPBh8WDRO0QTMHUsQfd2h6Q_8ISHo8LsxcBShY1tBbmNU5DG4o4aA/exec";
@@ -1437,10 +1437,31 @@
             saveRecordsLocal();
             syncRecordToGAS(record);
 
-            render();
-            resetForm();
-            showToast(`[${currentSemester}] 服務紀錄新增成功！`, 'success');
-        });
+            // 1. 清空表格篩選條件，確保新新增的紀錄一定會顯示在表格中
+document.getElementById('searchQuery').value = '';
+document.getElementById('filterStudent').value = 'ALL';
+
+// 2. 重新繪製表格與統計
+render();
+resetForm();
+
+// 3. 彈出中央成功通知
+showToast(`[${currentSemester}] 服務紀錄新增成功！`, 'success');
+
+// 4. 平滑滾動並高亮新新增的紀錄
+setTimeout(() => {
+    const newRow = document.getElementById(`record-row-${record.id}`);
+    if (newRow) {
+        // 平滑滾動到該列
+        newRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // 閃爍高亮背景效果 (黃綠色突顯)
+        newRow.classList.add('bg-emerald-100/80');
+        setTimeout(() => {
+            newRow.classList.remove('bg-emerald-100/80');
+        }, 2000);
+    }
+}, 100);
 
         function editRecord(id) {
             const record = records.find(r => String(r.id) === String(id));
@@ -1712,6 +1733,7 @@
                     }
 
                     const tr = document.createElement('tr');
+                    tr.id = `record-row-${r.id}`;
                     tr.className = "hover:bg-slate-50/60 transition";
                     tr.innerHTML = `
                         <td class="p-3 whitespace-nowrap font-bold text-xs align-top">
@@ -2080,15 +2102,30 @@
         }
 
         function showToast(msg, type = 'success') {
-            const toast = document.getElementById('toast');
-            document.getElementById('toastMsg').innerText = msg;
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            toast.classList.add('translate-y-0', 'opacity-100');
-            setTimeout(() => {
-                toast.classList.remove('translate-y-0', 'opacity-100');
-                toast.classList.add('translate-y-20', 'opacity-0');
-            }, 3000);
-        }
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toastMsg');
+    const toastIcon = document.getElementById('toastIcon');
+
+    toastMsg.innerText = msg;
+
+    if (type === 'error') {
+        toastIcon.className = "fa-solid fa-circle-xmark text-red-400 text-lg sm:text-xl";
+    } else if (type === 'info') {
+        toastIcon.className = "fa-solid fa-circle-info text-sky-400 text-lg sm:text-xl";
+    } else {
+        toastIcon.className = "fa-solid fa-circle-check text-emerald-400 text-lg sm:text-xl";
+    }
+
+    // 顯示動畫（放大 + 淡入）
+    toast.classList.remove('scale-90', 'opacity-0', 'pointer-events-none');
+    toast.classList.add('scale-100', 'opacity-100');
+
+    setTimeout(() => {
+        // 隱藏動畫
+        toast.classList.remove('scale-100', 'opacity-100');
+        toast.classList.add('scale-90', 'opacity-0', 'pointer-events-none');
+    }, 2000);
+}
 
         function escapeHtml(str) {
             return str ? str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : '';
