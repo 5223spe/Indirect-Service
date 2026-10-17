@@ -511,9 +511,13 @@
 
     </div>
 
-    <!-- 檢視完整內容 Modal (點擊省略號出現的小視窗) -->
+    <!-- 全局圓角浮動 Tooltip 提示框 (懸停發光顯示) -->
+    <div id="customTooltip" class="fixed pointer-events-none z-[100] hidden bg-slate-900/90 text-white text-sm sm:text-base px-3.5 py-2 rounded-xl shadow-xl backdrop-blur-md transition-opacity duration-150 border border-slate-700/50 max-w-xs leading-snug">
+    </div>
+
+    <!-- 檢視完整內容 Modal (點擊省略號出現的中央圓角小視窗) -->
     <div id="detailViewModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full p-5 sm:p-6 space-y-4">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                 <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
                     <i class="fa-solid fa-circle-info text-sky-800"></i>
@@ -523,7 +527,8 @@
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
-            <div id="detailViewContent" class="text-sm text-slate-700 leading-relaxed max-h-60 overflow-y-auto custom-scrollbar pt-1">
+            <!-- 加大字體至 text-base -->
+            <div id="detailViewContent" class="text-base text-slate-700 leading-relaxed max-h-64 overflow-y-auto custom-scrollbar pt-1">
             </div>
             <div class="flex justify-end pt-2">
                 <button type="button" onclick="closeDetailModal()" class="px-4 py-2 text-xs sm:text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition">
@@ -1480,6 +1485,24 @@
             document.getElementById('detailViewModal').classList.add('hidden');
         }
 
+        // 自訂懸停美化 Tooltip 函數 (圓角框 + 放大字體)
+        function showCustomTooltip(e, text) {
+            const tooltip = document.getElementById('customTooltip');
+            tooltip.innerText = text;
+            tooltip.classList.remove('hidden');
+            
+            const x = e.clientX + 12;
+            const y = e.clientY + 12;
+            
+            tooltip.style.left = `${x}px`;
+            tooltip.style.top = `${y}px`;
+        }
+
+        function hideCustomTooltip() {
+            const tooltip = document.getElementById('customTooltip');
+            tooltip.classList.add('hidden');
+        }
+
         // 提交小視窗的編輯表單
         async function handleEditFormSubmit(e) {
             e.preventDefault();
@@ -1629,12 +1652,14 @@
                     if (needsTargetEllipsis) {
                         const firstTarget = r.targets[0] || '';
                         const displayTargetText = firstTarget.length > 4 ? firstTarget.substring(0, 4) : firstTarget;
-                        const targetsModalHtml = `<ul class="list-disc pl-5 space-y-1">${r.targets.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul>`;
+                        const targetsModalHtml = `<ul class="list-disc pl-5 space-y-1.5">${r.targets.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul>`;
                         
                         targetsHtml = `
                             <div class="flex items-center gap-1">
                                 <span class="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-md font-medium">${escapeHtml(displayTargetText)}</span>
-                                <button type="button" title="點擊檢視完整清單：&#10;${escapeHtml(fullTargetsText)}" 
+                                <button type="button" 
+                                        onmousemove="showCustomTooltip(event, '${escapeHtml(fullTargetsText)}')" 
+                                        onmouseleave="hideCustomTooltip()"
                                         onclick="openDetailModal('完整服務對象清單', '${escapeHtml(targetsModalHtml)}')"
                                         class="bg-slate-200 hover:bg-slate-300 text-slate-600 text-xs px-1.5 py-0.5 rounded font-bold cursor-pointer transition">
                                     ...
@@ -1654,12 +1679,14 @@
                     let contentsHtml = '';
                     if (r.contents.length > 1) {
                         const firstContent = r.contents[0];
-                        const contentsModalHtml = `<ul class="list-disc pl-5 space-y-1">${r.contents.map(c => `<li>${escapeHtml(c)}</li>`).join('')}</ul>`;
+                        const contentsModalHtml = `<ul class="list-disc pl-5 space-y-1.5">${r.contents.map(c => `<li>${escapeHtml(c)}</li>`).join('')}</ul>`;
                         
                         contentsHtml = `
                             <div class="flex items-center gap-1">
                                 <span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-md font-medium border border-slate-200/60">${escapeHtml(firstContent)}</span>
-                                <button type="button" title="點擊檢視完整內容：&#10;${escapeHtml(fullContentsText)}" 
+                                <button type="button" 
+                                        onmousemove="showCustomTooltip(event, '${escapeHtml(fullContentsText)}')" 
+                                        onmouseleave="hideCustomTooltip()"
                                         onclick="openDetailModal('完整間接服務內容', '${escapeHtml(contentsModalHtml)}')"
                                         class="bg-slate-200 hover:bg-slate-300 text-slate-600 text-xs px-1.5 py-0.5 rounded font-bold cursor-pointer transition">
                                     ...
@@ -1684,7 +1711,9 @@
                         notesHtml = `
                             <div class="flex items-center gap-1">
                                 <span>${escapeHtml(displayNotes)}</span>
-                                <button type="button" title="點擊檢視完整備註：&#10;${escapeHtml(rawNotes)}" 
+                                <button type="button" 
+                                        onmousemove="showCustomTooltip(event, '${escapeHtml(rawNotes)}')" 
+                                        onmouseleave="hideCustomTooltip()"
                                         onclick="openDetailModal('完整備註內容', '${safeNotes}')"
                                         class="bg-slate-200 hover:bg-slate-300 text-slate-600 text-xs px-1.5 py-0.5 rounded font-bold cursor-pointer transition">
                                     ...
