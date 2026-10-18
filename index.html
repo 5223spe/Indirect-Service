@@ -1899,31 +1899,6 @@ function calculateEditEndTimeFromMinutes() {
 
             // 🌟 4. 依照指定格式組合計算字串：個案數(?人)/總服務分鐘數(?分鐘)=?分鐘/人
             avgCalcFormatString = `個案數(${studentCount}人)/總服務分鐘數(${totalMins}分鐘)=${avgMinsPerStudent}分鐘/人`;
-
-            // 🌟 滑鼠移入方框時，顯示圓角 Tooltip 提示
-function showCardAvgTooltip(e) {
-    if (!avgCalcFormatString) return;
-    showCustomTooltip(e, avgCalcFormatString);
-}
-
-// 🌟 點擊方框時，於畫面中央呈現小視窗 Modal
-function openAvgCalcModal() {
-    if (!avgCalcFormatString) return;
-    const modalContentHtml = `
-        <div class="text-center py-4 space-y-3">
-            <div class="text-xs text-slate-500 font-medium">計算方式與結果</div>
-            <div class="inline-block bg-slate-100 text-slate-800 font-bold px-4 py-2.5 rounded-xl border border-slate-200 text-base sm:text-lg shadow-inner">
-                ${escapeHtml(avgCalcFormatString)}
-            </div>
-            <div class="text-xs text-slate-400 pt-2 text-left bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-1">
-                <div>• 當前教師：<span class="font-bold text-slate-700">${escapeHtml(currentTeacher)} 老師</span></div>
-                <div>• 名單學生總人數 (個案數)：<span class="font-bold text-slate-700">${getCurrentTeacherStudents().length} 人</span></div>
-                <div>• 本學期總服務時間：<span class="font-bold text-slate-700">${document.getElementById('totalMinutes').innerText} 分鐘</span></div>
-            </div>
-        </div>
-    `;
-    openDetailModal('個案本學期平均服務計算', modalContentHtml);
-}
             
             const goalHours = parseFloat(document.getElementById('goalHoursInput').value) || 40;
             const goalTargetMins = goalHours * 60;
@@ -1949,23 +1924,21 @@ function openAvgCalcModal() {
             filtered.forEach(r => { if (r.contents) r.contents.forEach(c => { if (contentCounts[c] !== undefined) contentCounts[c]++; }); });
 
             // 🌟 統計學生一整學期的晤談次數
-const studentCounts = {};
+            const studentCounts = {};
 
-// 1. 強制載入「快速選擇/名單」中的每一個學生，初始值設為 0
-const currentStudentList = getCurrentTeacherStudents();
-if (Array.isArray(currentStudentList)) {
-    currentStudentList.forEach(s => {
-        if (s) studentCounts[s] = 0;
-    });
-}
+            // 1. 強制載入「快速選擇/名單」中的每一個學生，初始值設為 0
+            if (Array.isArray(currentStudentList)) {
+                currentStudentList.forEach(s => {
+                    if (s) studentCounts[s] = 0;
+                });
+            }
 
-// 2. 累加當前學期有晤談紀錄的次數
-filtered.forEach(r => {
-    if (r.studentName) {
-        // 若學生未在名單內但有歷史紀錄，也一併納入統計
-        studentCounts[r.studentName] = (studentCounts[r.studentName] || 0) + 1;
-    }
-});
+            // 2. 累加當前學期有晤談紀錄的次數
+            filtered.forEach(r => {
+                if (r.studentName) {
+                    studentCounts[r.studentName] = (studentCounts[r.studentName] || 0) + 1;
+                }
+            });
 
             const studentLabels = Object.keys(studentCounts);
             const studentData = Object.values(studentCounts);
@@ -2003,61 +1976,79 @@ filtered.forEach(r => {
                                 font: { size: 11, weight: 'bold' },
                                 color: '#64748b'
                             },
-                            ticks: {
-                                precision: 0
-                            }
+                            ticks: { precision: 0 }
                         } 
                     } 
                 }
             });
 
             // 🌟 學生晤談次數統計圖表 (長條圖 - 強制顯示全部學生)
-const trendCtx = document.getElementById('trendChart').getContext('2d');
-if (trendChartInstance) trendChartInstance.destroy();
-trendChartInstance = new Chart(trendCtx, {
-    type: 'bar',
-    data: { 
-        labels: studentLabels, 
-        datasets: [{ 
-            label: '晤談次數',
-            data: studentData, 
-            backgroundColor: '#10b981', 
-            borderRadius: 4,
-            barThickness: 20 // 固定的長條寬度，畫面更精緻
-        }] 
-    },
-    options: { 
-        responsive: true, 
-        maintainAspectRatio: false, 
-        plugins: { 
-            legend: { display: false } 
-        }, 
-        scales: { 
-            x: {
-                ticks: { 
-                    font: { size: 11 },
-                    autoSkip: false, // 關鍵：禁止圖表自動跳過/隱藏名字
-                    maxRotation: 45,
-                    minRotation: 45
-                }
-            },
-            y: { 
-                beginAtZero: true,
-                title: {
-                    display: true,
-                    text: '(次)',
-                    align: 'end',
-                    rotation: 0,
-                    font: { size: 11, weight: 'bold' },
-                    color: '#64748b'
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            if (trendChartInstance) trendChartInstance.destroy();
+            trendChartInstance = new Chart(trendCtx, {
+                type: 'bar',
+                data: { 
+                    labels: studentLabels, 
+                    datasets: [{ 
+                        label: '晤談次數',
+                        data: studentData, 
+                        backgroundColor: '#10b981', 
+                        borderRadius: 4,
+                        barThickness: 20
+                    }] 
                 },
-                ticks: {
-                    precision: 0
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { legend: { display: false } }, 
+                    scales: { 
+                        x: {
+                            ticks: { 
+                                font: { size: 11 },
+                                autoSkip: false,
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        },
+                        y: { 
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '(次)',
+                                align: 'end',
+                                rotation: 0,
+                                font: { size: 11, weight: 'bold' },
+                                color: '#64748b'
+                            },
+                            ticks: { precision: 0 }
+                        } 
+                    } 
                 }
-            } 
-        } 
-    }
-});
+            });
+        }
+
+        // 🌟 獨立放在 renderAnalytics() 外面的 2 個事件處理函式：
+        function showCardAvgTooltip(e) {
+            if (!avgCalcFormatString) return;
+            showCustomTooltip(e, avgCalcFormatString);
+        }
+
+        function openAvgCalcModal() {
+            if (!avgCalcFormatString) return;
+            const modalContentHtml = `
+                <div class="text-center py-4 space-y-3">
+                    <div class="text-xs text-slate-500 font-medium">計算方式與結果</div>
+                    <div class="inline-block bg-slate-100 text-slate-800 font-bold px-4 py-2.5 rounded-xl border border-slate-200 text-base sm:text-lg shadow-inner">
+                        ${escapeHtml(avgCalcFormatString)}
+                    </div>
+                    <div class="text-xs text-slate-400 pt-2 text-left bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-1">
+                        <div>• 當前教師：<span class="font-bold text-slate-700">${escapeHtml(currentTeacher)} 老師</span></div>
+                        <div>• 名單學生總人數 (個案數)：<span class="font-bold text-slate-700">${getCurrentTeacherStudents().length} 人</span></div>
+                        <div>• 本學期總服務時間：<span class="font-bold text-slate-700">${document.getElementById('totalMinutes').innerText} 分鐘</span></div>
+                    </div>
+                </div>
+            `;
+            openDetailModal('個案本學期平均服務計算', modalContentHtml);
         }
 
         function format12Hour(timeStr) {
