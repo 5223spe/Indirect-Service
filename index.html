@@ -1897,8 +1897,8 @@ function calculateEditEndTimeFromMinutes() {
             document.getElementById('cardAvgSessions').innerText = avgSessionsPerStudent;
             document.getElementById('cardAvgMinsPerStudent').innerText = avgMinsPerStudent;
 
-            // 🌟 4. 依照指定格式組合計算字串：個案數(?人)/總服務分鐘數(?分鐘)=?分鐘/人
-            avgCalcFormatString = `個案數(${studentCount}人)/總服務分鐘數(${totalMins}分鐘)=${avgMinsPerStudent}分鐘/人`;
+            // 🌟 4. 使用 ÷ 符號，並加上換行符號 \n (黑底浮動提示會在 '=' 自動換行)
+            avgCalcFormatString = `總服務分鐘數(${totalMins}分鐘) ÷ 個案數(${studentCount}人)\n= ${avgMinsPerStudent} 分鐘/人`;
             
             const goalHours = parseFloat(document.getElementById('goalHoursInput').value) || 40;
             const goalTargetMins = goalHours * 60;
@@ -2033,23 +2033,28 @@ function calculateEditEndTimeFromMinutes() {
             showCustomTooltip(e, avgCalcFormatString);
         }
 
-        function openAvgCalcModal() {
-            if (!avgCalcFormatString) return;
-            const modalContentHtml = `
-                <div class="text-center py-4 space-y-3">
-                    <div class="text-xs text-slate-500 font-medium">計算方式與結果</div>
-                    <div class="inline-block bg-slate-100 text-slate-800 font-bold px-4 py-2.5 rounded-xl border border-slate-200 text-base sm:text-lg shadow-inner">
-                        ${escapeHtml(avgCalcFormatString)}
-                    </div>
-                    <div class="text-xs text-slate-400 pt-2 text-left bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-1">
-                        <div>• 當前教師：<span class="font-bold text-slate-700">${escapeHtml(currentTeacher)} 老師</span></div>
-                        <div>• 名單學生總人數 (個案數)：<span class="font-bold text-slate-700">${getCurrentTeacherStudents().length} 人</span></div>
-                        <div>• 本學期總服務時間：<span class="font-bold text-slate-700">${document.getElementById('totalMinutes').innerText} 分鐘</span></div>
-                    </div>
-                </div>
-            `;
-            openDetailModal('個案本學期平均服務計算', modalContentHtml);
-        }
+        // 🌟 點擊方框時，於畫面中央呈現小視窗 Modal
+function openAvgCalcModal() {
+    if (!avgCalcFormatString) return;
+    
+    // 轉成 HTML 格式，將 \n 轉為 <br>
+    const formattedHtml = escapeHtml(avgCalcFormatString).replace(/\n/g, '<br>');
+
+    const modalContentHtml = `
+        <div class="text-center py-4 space-y-3">
+            <div class="text-xs text-slate-500 font-medium">計算方式與結果</div>
+            <div class="inline-block bg-slate-100 text-slate-800 font-bold px-6 py-3 rounded-xl border border-slate-200 text-base sm:text-lg shadow-inner leading-relaxed">
+                ${formattedHtml}
+            </div>
+            <div class="text-xs text-slate-400 pt-2 text-left bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-1">
+                <div>• 當前教師：<span class="font-bold text-slate-700">${escapeHtml(currentTeacher)} 老師</span></div>
+                <div>• 名單學生總人數 (個案數)：<span class="font-bold text-slate-700">${getCurrentTeacherStudents().length} 人</span></div>
+                <div>• 本學期總服務時間：<span class="font-bold text-slate-700">${document.getElementById('totalMinutes').innerText} 分鐘</span></div>
+            </div>
+        </div>
+    `;
+    openDetailModal('個案本學期平均服務計算', modalContentHtml);
+}
 
         function format12Hour(timeStr) {
             if (!timeStr) return '';
