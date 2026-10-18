@@ -1720,82 +1720,81 @@ function calculateEditEndTimeFromMinutes() {
                 finalFiltered.forEach(r => {
                     const badgeClass = theme.badgeClass;
 
-                    const fullTargetsText = r.targets.join(', ');
-                    let targetsHtml = '';
-                    const needsTargetEllipsis = r.targets.length > 1 || (r.targets.length === 1 && r.targets[0].length > 4);
+                    // 服務對象 HTML 處理
+const fullTargetsText = r.targets.join(', ');
+let targetsHtml = '';
 
-                    if (needsTargetEllipsis) {
-                        const firstTarget = r.targets[0] || '';
-                        const displayTargetText = firstTarget.length > 4 ? firstTarget.substring(0, 4) : firstTarget;
-                        const targetsModalHtml = `<ul class="list-disc pl-5 space-y-1.5">${r.targets.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul>`;
-                        
-                        targetsHtml = `
-                            <div class="flex items-center gap-1">
-                                <span class="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-md font-medium">${escapeHtml(displayTargetText)}</span>
-                                <button type="button" 
-                                        onmousemove="showCustomTooltip(event, '${escapeHtml(fullTargetsText)}')" 
-                                        onmouseleave="hideCustomTooltip()"
-                                        onclick="openDetailModal('完整服務對象清單', '${escapeHtml(targetsModalHtml)}')"
-                                        class="bg-slate-200 hover:bg-slate-300 text-slate-600 text-xs px-1.5 py-0.5 rounded font-bold cursor-pointer transition">
-                                    ...
-                                </button>
-                            </div>
-                        `;
-                    } else {
-                        targetsHtml = `
-                            <div class="flex flex-wrap gap-1.5">
-                                ${r.targets.map(t => `<span class="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-md font-medium">${escapeHtml(t)}</span>`).join('')}
-                            </div>
-                        `;
-                    }
+const firstTarget = r.targets[0] || '';
+const mobileTargetText = firstTarget.length > 2 ? firstTarget.substring(0, 2) : firstTarget;
 
-                    const fullContentsText = r.contents.join(', ');
-                    let contentsHtml = '';
-                    if (r.contents.length > 1) {
-                        const firstContent = r.contents[0];
-                        const contentsModalHtml = `<ul class="list-disc pl-5 space-y-1.5">${r.contents.map(c => `<li>${escapeHtml(c)}</li>`).join('')}</ul>`;
-                        
-                        contentsHtml = `
-                            <div class="flex items-center gap-1">
-                                <span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-md font-medium border border-slate-200/60">${escapeHtml(firstContent)}</span>
-                                <button type="button" 
-                                        onmousemove="showCustomTooltip(event, '${escapeHtml(fullContentsText)}')" 
-                                        onmouseleave="hideCustomTooltip()"
-                                        onclick="openDetailModal('完整間接服務內容', '${escapeHtml(contentsModalHtml)}')"
-                                        class="bg-slate-200 hover:bg-slate-300 text-slate-600 text-xs px-1.5 py-0.5 rounded font-bold cursor-pointer transition">
-                                    ...
-                                </button>
-                            </div>
-                        `;
-                    } else {
-                        contentsHtml = `
-                            <div class="flex flex-wrap gap-1.5">
-                                ${r.contents.map(c => `<span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-md font-medium border border-slate-200/60">${escapeHtml(c)}</span>`).join('')}
-                            </div>
-                        `;
-                    }
+targetsHtml = `
+    <!-- 手機版 (sm:hidden)：固定顯示前兩個字 + 按鈕 -->
+    <div class="flex sm:hidden items-center gap-1">
+        <span class="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-md font-medium">${escapeHtml(mobileTargetText)}</span>
+        <button type="button" 
+                onclick="openDetailModal('完整服務對象清單', '<ul class=\\'list-disc pl-5 space-y-1.5\\'>${r.targets.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul>')"
+                class="bg-slate-200 hover:bg-slate-300 text-slate-600 text-xs px-1.5 py-0.5 rounded font-bold cursor-pointer transition">
+            ...
+        </button>
+    </div>
 
-                    const rawNotes = r.notes || '';
-                    let notesHtml = '-';
-                    if (rawNotes.length > 2) {
-                        const displayNotes = rawNotes.substring(0, 2);
-                        const safeNotes = escapeHtml(rawNotes).replace(/\n/g, '<br>');
-                        
-                        notesHtml = `
-                            <div class="flex items-center gap-1">
-                                <span>${escapeHtml(displayNotes)}</span>
-                                <button type="button" 
-                                        onmousemove="showCustomTooltip(event, '${escapeHtml(rawNotes)}')" 
-                                        onmouseleave="hideCustomTooltip()"
-                                        onclick="openDetailModal('完整備註內容', '${safeNotes}')"
-                                        class="bg-slate-200 hover:bg-slate-300 text-slate-600 text-xs px-1.5 py-0.5 rounded font-bold cursor-pointer transition">
-                                    ...
-                                </button>
-                            </div>
-                        `;
-                    } else if (rawNotes.length > 0) {
-                        notesHtml = escapeHtml(rawNotes);
-                    }
+    <!-- 電腦版 (hidden sm:flex)：維持原本顯示 -->
+    <div class="hidden sm:flex flex-wrap gap-1.5">
+        ${r.targets.map(t => `<span class="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-md font-medium">${escapeHtml(t)}</span>`).join('')}
+    </div>
+`;
+
+                    // 間接服務內容 HTML 處理
+const fullContentsText = r.contents.join(', ');
+let contentsHtml = '';
+
+const firstContent = r.contents[0] || '';
+const mobileContentText = firstContent.length > 2 ? firstContent.substring(0, 2) : firstContent;
+const contentsModalHtml = `<ul class="list-disc pl-5 space-y-1.5">${r.contents.map(c => `<li>${escapeHtml(c)}</li>`).join('')}</ul>`;
+
+contentsHtml = `
+    <!-- 手機版 (sm:hidden)：固定顯示前兩個字 + 按鈕 -->
+    <div class="flex sm:hidden items-center gap-1">
+        <span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-md font-medium border border-slate-200/60">${escapeHtml(mobileContentText)}</span>
+        <button type="button" 
+                onclick="openDetailModal('完整間接服務內容', '${escapeHtml(contentsModalHtml)}')"
+                class="bg-slate-200 hover:bg-slate-300 text-slate-600 text-xs px-1.5 py-0.5 rounded font-bold cursor-pointer transition">
+            ...
+        </button>
+    </div>
+
+    <!-- 電腦版 (hidden sm:flex)：維持原本顯示 -->
+    <div class="hidden sm:flex flex-wrap gap-1.5">
+        ${r.contents.map(c => `<span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-md font-medium border border-slate-200/60">${escapeHtml(c)}</span>`).join('')}
+    </div>
+`;
+
+                    // 備註 HTML 處理
+const rawNotes = r.notes || '';
+let notesHtml = '-';
+
+if (rawNotes.length > 0) {
+    const mobileNotesText = rawNotes.length > 2 ? rawNotes.substring(0, 2) : rawNotes;
+    const safeNotes = escapeHtml(rawNotes).replace(/\n/g, '<br>');
+
+    notesHtml = `
+        <!-- 手機版 (sm:hidden)：顯示前兩個字 + ... 按鈕（若超過2字） -->
+        <div class="flex sm:hidden items-center gap-1">
+            <span>${escapeHtml(mobileNotesText)}</span>
+            ${rawNotes.length > 2 ? `
+            <button type="button" 
+                    onclick="openDetailModal('完整備註內容', '${safeNotes}')"
+                    class="bg-slate-200 hover:bg-slate-300 text-slate-600 text-xs px-1.5 py-0.5 rounded font-bold cursor-pointer transition">
+                ...
+            </button>` : ''}
+        </div>
+
+        <!-- 電腦版 (hidden sm:block)：顯示完整內容 -->
+        <div class="hidden sm:block whitespace-pre-wrap">
+            ${safeNotes}
+        </div>
+    `;
+}
 
                     const tr = document.createElement('tr');
                     tr.id = `record-row-${r.id}`;
