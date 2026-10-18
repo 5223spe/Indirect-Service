@@ -86,6 +86,17 @@
         .record-highlight-active {
             background-color: rgba(167, 243, 208, 0.7) !important; /* 淺綠色 (emerald-200) */
         }
+        /* 手機版 (螢幕寬度 < 640px) 專用文字截斷樣式 */
+@media (max-width: 639px) {
+    .mobile-truncate-2 {
+        display: inline-block;
+        max-width: 2.5em; /* 大約限制呈現 2 個字的寬度 */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+}
     </style>
 </head>
 <body class="py-8 px-4 sm:px-6 lg:px-8 text-slate-800">
@@ -1676,176 +1687,151 @@ function calculateEditEndTimeFromMinutes() {
         }
 
         function renderTable() {
-            const theme = getCurrentTheme();
-            const tableBody = document.getElementById('recordsTableBody');
-            const noData = document.getElementById('noDataMessage');
-            const tableContainer = document.getElementById('tableContainer');
+    const theme = getCurrentTheme();
+    const tableBody = document.getElementById('recordsTableBody');
+    const noData = document.getElementById('noDataMessage');
+    const tableContainer = document.getElementById('tableContainer');
 
-            const query = (document.getElementById('searchQuery').value || '').trim().toLowerCase();
-            const studentFilter = document.getElementById('filterStudent').value;
+    const query = (document.getElementById('searchQuery').value || '').trim().toLowerCase();
+    const studentFilter = document.getElementById('filterStudent').value;
 
-            const teacherFiltered = getFilteredRecords();
+    const teacherFiltered = getFilteredRecords();
 
-            teacherFiltered.sort((a, b) => {
-                const dateA = a.serviceDate || '';
-                const dateB = b.serviceDate || '';
-                if (dateA !== dateB) {
-                    return dateA.localeCompare(dateB);
-                }
-                const timeA = a.startTime || '';
-                const timeB = b.startTime || '';
-                return timeA.localeCompare(timeB);
-            });
-
-            const finalFiltered = teacherFiltered.filter(r => {
-                const matchesQuery = !query || 
-                    (r.studentName && r.studentName.toLowerCase().includes(query)) ||
-                    (r.notes && r.notes.toLowerCase().includes(query));
-                const matchesStudent = (studentFilter === 'ALL') || (r.studentName === studentFilter);
-                return matchesQuery && matchesStudent;
-            });
-
-            if (finalFiltered.length > 10) {
-                tableContainer.classList.add('max-h-[500px]', 'overflow-y-auto');
-            } else {
-                tableContainer.classList.remove('max-h-[500px]', 'overflow-y-auto');
-            }
-
-            tableBody.innerHTML = '';
-
-            if (finalFiltered.length === 0) {
-                noData.classList.remove('hidden');
-            } else {
-                noData.classList.add('hidden');
-                finalFiltered.forEach(r => {
-                    const badgeClass = theme.badgeClass;
-
-                    const fullTargetsText = r.targets.join(', ');
-                    let targetsHtml = '';
-                    const needsTargetEllipsis = r.targets.length > 1 || (r.targets.length === 1 && r.targets[0].length > 4);
-
-                    if (needsTargetEllipsis) {
-                        const firstTarget = r.targets[0] || '';
-                        const displayTargetText = firstTarget.length > 4 ? firstTarget.substring(0, 4) : firstTarget;
-                        const targetsModalHtml = `<ul class="list-disc pl-5 space-y-1.5">${r.targets.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul>`;
-                        
-                        targetsHtml = `
-                            <div class="flex items-center gap-1">
-                                <span class="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-md font-medium">${escapeHtml(displayTargetText)}</span>
-                                <button type="button" 
-                                        onmousemove="showCustomTooltip(event, '${escapeHtml(fullTargetsText)}')" 
-                                        onmouseleave="hideCustomTooltip()"
-                                        onclick="openDetailModal('完整服務對象清單', '${escapeHtml(targetsModalHtml)}')"
-                                        class="bg-slate-200 hover:bg-slate-300 text-slate-600 text-xs px-1.5 py-0.5 rounded font-bold cursor-pointer transition">
-                                    ...
-                                </button>
-                            </div>
-                        `;
-                    } else {
-                        targetsHtml = `
-                            <div class="flex flex-wrap gap-1.5">
-                                ${r.targets.map(t => `<span class="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-md font-medium">${escapeHtml(t)}</span>`).join('')}
-                            </div>
-                        `;
-                    }
-
-                    const fullContentsText = r.contents.join(', ');
-                    let contentsHtml = '';
-                    if (r.contents.length > 1) {
-                        const firstContent = r.contents[0];
-                        const contentsModalHtml = `<ul class="list-disc pl-5 space-y-1.5">${r.contents.map(c => `<li>${escapeHtml(c)}</li>`).join('')}</ul>`;
-                        
-                        contentsHtml = `
-                            <div class="flex items-center gap-1">
-                                <span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-md font-medium border border-slate-200/60">${escapeHtml(firstContent)}</span>
-                                <button type="button" 
-                                        onmousemove="showCustomTooltip(event, '${escapeHtml(fullContentsText)}')" 
-                                        onmouseleave="hideCustomTooltip()"
-                                        onclick="openDetailModal('完整間接服務內容', '${escapeHtml(contentsModalHtml)}')"
-                                        class="bg-slate-200 hover:bg-slate-300 text-slate-600 text-xs px-1.5 py-0.5 rounded font-bold cursor-pointer transition">
-                                    ...
-                                </button>
-                            </div>
-                        `;
-                    } else {
-                        contentsHtml = `
-                            <div class="flex flex-wrap gap-1.5">
-                                ${r.contents.map(c => `<span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-md font-medium border border-slate-200/60">${escapeHtml(c)}</span>`).join('')}
-                            </div>
-                        `;
-                    }
-
-                    const rawNotes = r.notes || '';
-                    let notesHtml = '-';
-                    if (rawNotes.length > 2) {
-                        const displayNotes = rawNotes.substring(0, 2);
-                        const safeNotes = escapeHtml(rawNotes).replace(/\n/g, '<br>');
-                        
-                        notesHtml = `
-                            <div class="flex items-center gap-1">
-                                <span>${escapeHtml(displayNotes)}</span>
-                                <button type="button" 
-                                        onmousemove="showCustomTooltip(event, '${escapeHtml(rawNotes)}')" 
-                                        onmouseleave="hideCustomTooltip()"
-                                        onclick="openDetailModal('完整備註內容', '${safeNotes}')"
-                                        class="bg-slate-200 hover:bg-slate-300 text-slate-600 text-xs px-1.5 py-0.5 rounded font-bold cursor-pointer transition">
-                                    ...
-                                </button>
-                            </div>
-                        `;
-                    } else if (rawNotes.length > 0) {
-                        notesHtml = escapeHtml(rawNotes);
-                    }
-
-                    const tr = document.createElement('tr');
-                    tr.id = `record-row-${r.id}`;
-                    tr.className = "hover:bg-slate-50/60 transition duration-500";
-                    tr.innerHTML = `
-                        <td class="p-3 whitespace-nowrap font-bold text-xs align-top">
-                            <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
-                                ${escapeHtml(r.semester || '114-1')}
-                            </span>
-                        </td>
-                        <td class="p-3 whitespace-nowrap font-bold text-xs align-top">
-                            <span class="px-2.5 py-0.5 rounded-full border ${badgeClass}">
-                                ${escapeHtml(r.studentName)}
-                            </span>
-                        </td>
-                        <td class="p-3 whitespace-nowrap font-medium text-slate-700 text-xs align-top">
-                            ${r.serviceDate}
-                        </td>
-                        <td class="p-3 whitespace-nowrap font-medium text-slate-600 text-xs align-top">
-                            ${r.startTime && r.endTime ? `${r.startTime} -${r.endTime}` : '-'}
-                        </td>
-                        <td class="p-3 whitespace-nowrap align-top">
-                            <div class="inline-block ${theme.bgLightClass} ${theme.textDarkClass} font-bold text-xs px-2.5 py-1 rounded-md border border-slate-200">
-                                ${r.durationMinutes} 分鐘
-                            </div>
-                        </td>
-                        <td class="p-3 max-w-xs align-top">
-                            ${targetsHtml}
-                        </td>
-                        <td class="p-3 max-w-xs align-top">
-                            ${contentsHtml}
-                        </td>
-                        <td class="p-3 max-w-xs text-slate-500 text-xs align-top">
-                            ${notesHtml}
-                        </td>
-                        <td class="p-3 whitespace-nowrap text-center align-top">
-                            <div class="flex items-center justify-center gap-1">
-                                <button onclick="editRecord(${r.id})" class="text-slate-400 hover:text-sky-600 p-1 rounded transition" title="編輯紀錄">
-                                    <i class="fa-solid fa-pen text-sm"></i>
-                                </button>
-                                <button onclick="deleteRecord(${r.id})" class="text-slate-300 hover:text-red-500 p-1 rounded transition" title="刪除紀錄">
-                                    <i class="fa-regular fa-trash-can text-sm"></i>
-                                </button>
-                            </div>
-                        </td>
-                    `;
-                    tableBody.appendChild(tr);
-                });
-            }
+    teacherFiltered.sort((a, b) => {
+        const dateA = a.serviceDate || '';
+        const dateB = b.serviceDate || '';
+        if (dateA !== dateB) {
+            return dateA.localeCompare(dateB);
         }
+        const timeA = a.startTime || '';
+        const timeB = b.startTime || '';
+        return timeA.localeCompare(timeB);
+    });
+
+    const finalFiltered = teacherFiltered.filter(r => {
+        const matchesQuery = !query || 
+            (r.studentName && r.studentName.toLowerCase().includes(query)) ||
+            (r.notes && r.notes.toLowerCase().includes(query));
+        const matchesStudent = (studentFilter === 'ALL') || (r.studentName === studentFilter);
+        return matchesQuery && matchesStudent;
+    });
+
+    if (finalFiltered.length > 10) {
+        tableContainer.classList.add('max-h-[500px]', 'overflow-y-auto');
+    } else {
+        tableContainer.classList.remove('max-h-[500px]', 'overflow-y-auto');
+    }
+
+    tableBody.innerHTML = '';
+
+    if (finalFiltered.length === 0) {
+        noData.classList.remove('hidden');
+    } else {
+        noData.classList.add('hidden');
+        finalFiltered.forEach(r => {
+            const badgeClass = theme.badgeClass;
+
+            // 1. 服務對象（電腦版完整顯示；手機版 CSS 自動截斷 2 字 + ... 按鈕）
+            const fullTargetsText = r.targets ? r.targets.join(', ') : '';
+            const targetsModalHtml = `<ul class="list-disc pl-5 space-y-1.5">${r.targets ? r.targets.map(t => `<li>${escapeHtml(t)}</li>`).join('') : ''}</ul>`;
+            const targetsHtml = `
+                <div class="flex items-center gap-1 flex-wrap sm:flex-nowrap">
+                    <span class="mobile-truncate-2 bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-md font-medium" title="${escapeHtml(fullTargetsText)}">
+                        ${escapeHtml(fullTargetsText)}
+                    </span>
+                    ${fullTargetsText.length > 2 ? `
+                    <button type="button" 
+                            onclick="openDetailModal('完整服務對象清單', '${escapeHtml(targetsModalHtml)}')"
+                            class="sm:hidden bg-slate-200 hover:bg-slate-300 text-slate-600 text-xs px-1.5 py-0.5 rounded font-bold cursor-pointer transition">
+                        ...
+                    </button>` : ''}
+                </div>
+            `;
+
+            // 2. 間接服務內容（電腦版完整顯示；手機版 CSS 自動截斷 2 字 + ... 按鈕）
+            const fullContentsText = r.contents ? r.contents.join(', ') : '';
+            const contentsModalHtml = `<ul class="list-disc pl-5 space-y-1.5">${r.contents ? r.contents.map(c => `<li>${escapeHtml(c)}</li>`).join('') : ''}</ul>`;
+            const contentsHtml = `
+                <div class="flex items-center gap-1 flex-wrap sm:flex-nowrap">
+                    <span class="mobile-truncate-2 bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-md font-medium border border-slate-200/60" title="${escapeHtml(fullContentsText)}">
+                        ${escapeHtml(fullContentsText)}
+                    </span>
+                    ${fullContentsText.length > 2 ? `
+                    <button type="button" 
+                            onclick="openDetailModal('完整間接服務內容', '${escapeHtml(contentsModalHtml)}')"
+                            class="sm:hidden bg-slate-200 hover:bg-slate-300 text-slate-600 text-xs px-1.5 py-0.5 rounded font-bold cursor-pointer transition">
+                        ...
+                    </button>` : ''}
+                </div>
+            `;
+
+            // 3. 備註（電腦版完整顯示；手機版 CSS 自動截斷 2 字 + ... 按鈕）
+            const rawNotes = r.notes || '';
+            const safeNotes = escapeHtml(rawNotes).replace(/\n/g, '<br>');
+            let notesHtml = '-';
+            if (rawNotes.length > 0) {
+                notesHtml = `
+                    <div class="flex items-center gap-1 flex-wrap sm:flex-nowrap">
+                        <span class="mobile-truncate-2" title="${escapeHtml(rawNotes)}">${escapeHtml(rawNotes)}</span>
+                        ${rawNotes.length > 2 ? `
+                        <button type="button" 
+                                onclick="openDetailModal('完整備註內容', '${safeNotes}')"
+                                class="sm:hidden bg-slate-200 hover:bg-slate-300 text-slate-600 text-xs px-1.5 py-0.5 rounded font-bold cursor-pointer transition">
+                            ...
+                        </button>` : ''}
+                    </div>
+                `;
+            }
+
+            const tr = document.createElement('tr');
+            tr.id = `record-row-${r.id}`;
+            tr.className = "hover:bg-slate-50/60 transition duration-500";
+            tr.innerHTML = `
+                <td class="p-3 whitespace-nowrap font-bold text-xs align-top">
+                    <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
+                        ${escapeHtml(r.semester || '114-1')}
+                    </span>
+                </td>
+                <td class="p-3 whitespace-nowrap font-bold text-xs align-top">
+                    <span class="px-2.5 py-0.5 rounded-full border ${badgeClass}">
+                        ${escapeHtml(r.studentName)}
+                    </span>
+                </td>
+                <td class="p-3 whitespace-nowrap font-medium text-slate-700 text-xs align-top">
+                    ${r.serviceDate}
+                </td>
+                <td class="p-3 whitespace-nowrap font-medium text-slate-600 text-xs align-top">
+                    ${r.startTime && r.endTime ? `${r.startTime} -${r.endTime}` : '-'}
+                </td>
+                <td class="p-3 whitespace-nowrap align-top">
+                    <div class="inline-block ${theme.bgLightClass} ${theme.textDarkClass} font-bold text-xs px-2.5 py-1 rounded-md border border-slate-200">
+                        ${r.durationMinutes} 分鐘
+                    </div>
+                </td>
+                <td class="p-3 max-w-xs align-top">
+                    ${targetsHtml}
+                </td>
+                <td class="p-3 max-w-xs align-top">
+                    ${contentsHtml}
+                </td>
+                <td class="p-3 max-w-xs text-slate-500 text-xs align-top">
+                    ${notesHtml}
+                </td>
+                <td class="p-3 whitespace-nowrap text-center align-top">
+                    <div class="flex items-center justify-center gap-1">
+                        <button onclick="editRecord(${r.id})" class="text-slate-400 hover:text-sky-600 p-1 rounded transition" title="編輯紀錄">
+                            <i class="fa-solid fa-pen text-sm"></i>
+                        </button>
+                        <button onclick="deleteRecord(${r.id})" class="text-slate-300 hover:text-red-500 p-1 rounded transition" title="刪除紀錄">
+                            <i class="fa-regular fa-trash-can text-sm"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            tableBody.appendChild(tr);
+        });
+    }
+}
 
         function renderAnalytics() {
             const theme = getCurrentTheme();
