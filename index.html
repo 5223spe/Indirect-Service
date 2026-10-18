@@ -454,16 +454,14 @@
                     </div>
                 </div>
 
-                <div id="avgServiceCard" class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-sm flex justify-between items-center cursor-pointer hover:border-emerald-300 transition-colors"
-     onmouseenter="showAvgCardTooltip(event)" 
-     onmouseleave="hideCustomTooltip()"
-     onclick="openAvgCardModal()">
+                <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-sm flex justify-between items-center">
     <div>
         <div class="text-xs font-semibold text-slate-400 mb-1">個案本學期平均服務</div>
         <div class="text-xl sm:text-2xl font-extrabold text-slate-900">
             <span id="cardAvgSessions">0</span> <span class="text-sm font-normal text-slate-500">節/人</span>
         </div>
-        <div id="cardAvgMinsSub" class="text-xs text-emerald-600 font-medium mt-1 flex items-center gap-1">
+        <!-- 下方綠色文字：更新為平均分鐘數與 mouseover / title 計算說明 -->
+        <div id="cardAvgMinsSub" class="text-xs text-emerald-600 font-medium mt-1 flex items-center gap-1 cursor-help" title="">
             <i class="fa-solid fa-clock text-[10px]"></i>
             <span>平均每人 <span id="cardAvgMinsPerStudent">0</span> 分鐘</span>
         </div>
@@ -471,7 +469,6 @@
     <div class="w-10 h-10 sm:w-11 sm:h-11 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center text-base sm:text-lg">
         <i class="fa-solid fa-user-graduate"></i>
     </div>
-</div>
 </div>
 
                 <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-sm flex flex-col justify-between">
@@ -1726,7 +1723,7 @@ function calculateEditEndTimeFromMinutes() {
                 finalFiltered.forEach(r => {
                     const badgeClass = theme.badgeClass;
 
-                   // 1. 服務對象 HTML 處理（符合：超過4個字或多個項目顯示 ...，Hover顯示圓角框，點擊開啟中央視窗）
+                    // 1. 服務對象 HTML 處理（符合：超過4個字或多個項目顯示 ...，Hover顯示圓角框，點擊開啟中央視窗）
                     const targetsList = r.targets || [];
                     const firstTarget = targetsList[0] || '';
                     const hasMultipleTargets = targetsList.length > 1;
@@ -1883,60 +1880,28 @@ function calculateEditEndTimeFromMinutes() {
             document.getElementById('cardTotalRecords').innerText = `${totalCount} 筆`;
             document.getElementById('cardAvgMins').innerText = avgMins;
 
-// 1. 總人數：改為以「當前該位教師名單中的學生總人數」計算
-const teacherStudentsList = getCurrentTeacherStudents();
-const studentCount = teacherStudentsList.length;
+// 修改後的程式碼：計算個案本學期平均服務節數、分鐘數與次數
+const uniqueStudents = new Set(filtered.map(r => r.studentName).filter(Boolean));
+const studentCount = uniqueStudents.size;
 
-// 2. 計算總節數與平均節數 (每節 50 分鐘)
+// 1. 平均節數 (總節數 ÷ 學生人數)
 const totalSessionsNum = totalMins / 50;
 const avgSessionsPerStudent = studentCount > 0 ? (totalSessionsNum / studentCount).toFixed(1) : "0.0";
 
-// 3. 計算平均分鐘數 (總服務分鐘數 ÷ 個案數)
+// 2. 平均分鐘數 (總分鐘數 ÷ 學生人數)
 const avgMinsPerStudent = studentCount > 0 ? Math.round(totalMins / studentCount) : 0;
 
-// 4. 更新卡片畫面數據
+// 3. 平均次數 (總筆數 ÷ 學生人數)
+const avgTimesPerStudent = studentCount > 0 ? (totalCount / studentCount).toFixed(1) : "0.0";
+
+// 4. 更新畫面數據
 document.getElementById('cardAvgSessions').innerText = avgSessionsPerStudent;
 document.getElementById('cardAvgMinsPerStudent').innerText = avgMinsPerStudent;
 
-// 5. 儲存全域變數供 Hover Tooltip 與點擊 Modal 使用
-window.avgCardData = {
-    teacherName: currentTeacher,
-    studentCount: studentCount,
-    totalMins: totalMins,
-    totalSessions: totalSessionsNum.toFixed(1),
-    avgMins: avgMinsPerStudent,
-    avgSessions: avgSessionsPerStudent
-};
-            // 懸停 (Hover) 圓角框提示
-function showAvgCardTooltip(e) {
-    if (!window.avgCardData) return;
-    const d = window.avgCardData;
-    const tooltipText = `個案數 (${d.studentCount}人) / 總服務分鐘數 (${d.totalMins}分鐘) = ${d.avgMins}分鐘/人`;
-    showCustomTooltip(e, tooltipText);
-}
-
-// 點擊彈出中央視窗 (Modal)
-function openAvgCardModal() {
-    if (!window.avgCardData) return;
-    const d = window.avgCardData;
-    const modalHtml = `
-        <div class="space-y-3 py-1 text-slate-700">
-            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-emerald-900 font-medium text-sm">
-                <i class="fa-solid fa-calculator text-emerald-600 mr-1.5"></i>
-                <strong>計算公式：</strong>
-                <div class="mt-1.5 text-base font-bold text-emerald-800">
-                    個案數 (${d.studentCount}人) / 總服務分鐘數 (${d.totalMins}分鐘) = ${d.avgMins}分鐘/人
-                </div>
-            </div>
-            <div class="text-xs text-slate-500 space-y-1.5 pl-1 pt-1">
-                <p>• <strong>教師名稱：</strong>${escapeHtml(d.teacherName)} 老師</p>
-                <p>• <strong>學生名單總人數：</strong>${d.studentCount} 人</p>
-                <p>• <strong>本學期總服務時間：</strong>${d.totalMins} 分鐘 (${d.totalSessions} 節)</p>
-                <p>• <strong>平均服務節數：</strong>${d.avgSessions} 節/人</p>
-            </div>
-        </div>
-    `;
-    openDetailModal('個案本學期平均服務計算說明', modalHtml);
+// 5. 設定滑鼠懸停 (Hover) 時顯示的詳細計算說明
+const subElement = document.getElementById('cardAvgMinsSub');
+if (subElement) {
+    subElement.title = `計算公式與細節：\n• 本學期個案數：${studentCount} 人\n• 總服務分鐘數：${totalMins} 分鐘 (${totalSessionsNum.toFixed(1)} 節)\n• 總服務次數：${totalCount} 次\n• 平均每人節數：${avgSessionsPerStudent} 節/人\n• 平均每人分鐘數：${avgMinsPerStudent} 分鐘/人\n• 平均每人次數：${avgTimesPerStudent} 次/人`;
 }
 
             const goalHours = parseFloat(document.getElementById('goalHoursInput').value) || 40;
