@@ -2086,7 +2086,11 @@ function openAvgCalcModal() {
             });
 
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('間接服務紀錄');
+const worksheet = workbook.addWorksheet('間接服務紀錄', {
+    views: [
+        { state: 'frozen', ySplit: 1 } // 凍結頂端第 1 列標題
+    ]
+});
 
             const thinBorder = {
                 top: { style: 'thin', color: { argb: 'FF000000' } },
