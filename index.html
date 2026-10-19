@@ -175,7 +175,7 @@
                         </div>
                         <div class="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
                             <span>週數:</span>
-                            <input type="number" id="semesterWeeks" value="20" min="1" max="50" onchange="render()" 
+                            <input type="number" id="semesterWeeks" value="20" min="1" max="50" onchange="updateSemesterWeeks()" 
                                    class="w-10 px-1 py-0.5 text-center text-xs font-bold border border-emerald-500 text-emerald-700 bg-emerald-50/30 rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-500">
                         </div>
                     </div>
@@ -774,6 +774,8 @@
         let teachers = [];
         let avgCalcFormatString = "";
         let teacherStudentMap = {};
+        let teacherGoalHoursMap = {};
+        let teacherWeeksMap = {};
         let records = [];
         let currentTeacher = "";
 
@@ -782,6 +784,19 @@
         let trendChartInstance = null;
         let focusTargetElement = null;
 
+        function loadTeacherConfigsLocal() {
+    const savedGoals = localStorage.getItem('zhu_teacher_goal_hours_map');
+    teacherGoalHoursMap = savedGoals ? JSON.parse(savedGoals) : {};
+
+    const savedWeeks = localStorage.getItem('zhu_teacher_weeks_map');
+    teacherWeeksMap = savedWeeks ? JSON.parse(savedWeeks) : {};
+}
+
+function saveTeacherConfigsLocal() {
+    localStorage.setItem('zhu_teacher_goal_hours_map', JSON.stringify(teacherGoalHoursMap));
+    localStorage.setItem('zhu_teacher_weeks_map', JSON.stringify(teacherWeeksMap));
+}
+        
         function cleanDateStr(dateStr) {
             if (!dateStr) return '';
             if (typeof dateStr === 'string' && dateStr.includes('T')) {
@@ -847,6 +862,7 @@
             loadSemestersLocal();
             loadTeachersLocal();
             loadStudentListMapLocal();
+            loadTeacherConfigsLocal();
             loadRecordsLocal();
 
             const urlParams = new URLSearchParams(window.location.search);
@@ -937,6 +953,18 @@
                     hasChanges = true;
                 }
 
+                if (data.config) {
+                    if (data.config.teacherGoalHoursMap) {
+                        teacherGoalHoursMap = { ...teacherGoalHoursMap, ...data.config.teacherGoalHoursMap };
+                        hasChanges = true;
+                    }
+                    if (data.config.teacherWeeksMap) {
+                        teacherWeeksMap = { ...teacherWeeksMap, ...data.config.teacherWeeksMap };
+                        hasChanges = true;
+                    }
+                    saveTeacherConfigsLocal();
+                }
+
                 if (hasChanges) {
                     renderSemesterSelect();
                     renderTeacherSelect();
@@ -959,6 +987,8 @@
                         semesters: semesters,
                         teachers: teachers,
                         teacherStudentMap: teacherStudentMap
+                        teacherGoalHoursMap: teacherGoalHoursMap,
+                        teacherWeeksMap: teacherWeeksMap
                     })
                 });
             } catch (e) {
@@ -1133,6 +1163,12 @@
             currentTeacher = val;
 
             localStorage.setItem('zhu_current_teacher', val);
+            
+            const teacherGoal = teacherGoalHoursMap[currentTeacher] || 40;
+    const teacherWeeks = teacherWeeksMap[currentTeacher] || 20;
+
+    document.getElementById('goalHoursInput').value = teacherGoal;
+    document.getElementById('semesterWeeks').value = teacherWeeks;
 
             const studentInput = document.getElementById('studentName');
             const studentDropdown = document.getElementById('studentDropdown');
@@ -1273,10 +1309,23 @@
         }
 
         function updateGoalHours() {
-            const val = parseFloat(document.getElementById('goalHoursInput').value) || 40;
-            localStorage.setItem('zhu_teacher_goal_hours', val);
-            renderAnalytics();
-        }
+    if (!currentTeacher) return;
+    const val = parseFloat(document.getElementById('goalHoursInput').value) || 40;
+    teacherGoalHoursMap[currentTeacher] = val;
+    saveTeacherConfigsLocal();
+    syncConfigToGAS();
+    renderAnalytics();
+}
+
+// 🌟 新增 updateSemesterWeeks
+function updateSemesterWeeks() {
+    if (!currentTeacher) return;
+    const val = parseFloat(document.getElementById('semesterWeeks').value) || 20;
+    teacherWeeksMap[currentTeacher] = val;
+    saveTeacherConfigsLocal();
+    syncConfigToGAS();
+    renderAnalytics();
+}
 
         function getCurrentTeacherStudents() {
             if (!currentTeacher) return [];
